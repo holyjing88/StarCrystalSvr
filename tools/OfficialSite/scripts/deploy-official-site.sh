@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# StarLaneInfinite 官网绿色部署 → /wwwroot/OfficialSite ，默认 http://<主机>:6060/
+# Xinglan Wujie 官网绿色部署 → /wwwroot/OfficialSite ，默认 http://<主机>:6060/
 #
 #   bash tools/OfficialSite/scripts/deploy-official-site.sh
 #
@@ -62,6 +62,9 @@ install_static() {
   mkdir -p "$WEB_ROOT"
   rm -rf "${WEB_ROOT:?}"/*
   cp -a "$SITE_DIR/index.html" "$SITE_DIR/style.css" "$SITE_DIR/i18n.js" "$WEB_ROOT/"
+  if [[ -d "$SITE_DIR/privacy" ]]; then
+    cp -a "$SITE_DIR/privacy" "$WEB_ROOT/"
+  fi
   chmod -R a+rX "$WEB_ROOT" 2>/dev/null || true
   log "static → $WEB_ROOT"
 }
@@ -131,7 +134,7 @@ EOF
 
 smoke_test() {
   need_cmd curl
-  curl -fsS --max-time 8 "$SITE_URL/" | grep -qiE 'StarLane|星澜' \
+  curl -fsS --max-time 8 "$SITE_URL/" | grep -qiE 'Xinglan Wujie|星澜' \
     || die "smoke failed: $SITE_URL/"
   log "smoke OK $SITE_URL/"
 }

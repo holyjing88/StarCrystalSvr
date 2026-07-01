@@ -145,9 +145,11 @@ body {
 
 .logo-en {
   font-weight: 700;
-  font-size: 1.05rem;
+  font-size: 0.78rem;
   color: var(--text);
-  letter-spacing: 0.03em;
+  letter-spacing: 0.01em;
+  line-height: 1.25;
+  max-width: min(320px, 48vw);
 }
 
 .logo-zh {
@@ -584,4 +586,66 @@ html[dir="rtl"] .lang-picker-menu {
 
 .footer-mail:hover {
   color: var(--accent);
+}
+
+/* ---- privacy links (home) ---- */
+.privacy-link-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.privacy-link-card {
+  display: block;
+  text-decoration: none;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.35rem 1.5rem;
+  transition: border-color 0.15s, transform 0.15s;
+}
+
+.privacy-link-card:hover {
+  border-color: rgba(61, 214, 200, 0.35);
+  transform: translateY(-2px);
+}
+
+.privacy-link-tag {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: rgba(61, 214, 200, 0.1);
+  padding: 0.18rem 0.55rem;
+  border-radius: 6px;
+  margin-bottom: 0.65rem;
+}
+
+.privacy-link-card h3 {
+  margin: 0 0 0.45rem;
+  font-size: 1.15rem;
+  color: var(--text);
+}
+
+.privacy-link-card p {
+  margin: 0 0 0.85rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.privacy-link-cta {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+html[dir="rtl"] .privacy-link-cta::after {
+  content: ' ←';
+}
+
+html[dir="ltr"] .privacy-link-cta::after {
+  content: ' →';
 }
