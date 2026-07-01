@@ -3,6 +3,7 @@
 
   var STORAGE_KEY = 'official-site-lang-v2';
   var DEFAULT_LANG = 'en';
+  var I18N_VERSION = '3';
   var LANG_LABELS = { en: 'English', zh: '中文', ur: 'اردو' };
 
   var I18N_COMMON = {
@@ -277,9 +278,12 @@
 
   function t(lang, key) {
     var pack = getLangPack(lang);
-    if (pack[key] != null) return pack[key];
-    var fallback = getLangPack(DEFAULT_LANG);
-    return fallback[key] != null ? fallback[key] : key;
+    if (pack[key] != null && pack[key] !== '') return pack[key];
+    if (lang !== DEFAULT_LANG) {
+      var fallback = getLangPack(DEFAULT_LANG);
+      if (fallback[key] != null && fallback[key] !== '') return fallback[key];
+    }
+    return null;
   }
 
   function updateLangPickerUI(lang) {
@@ -326,17 +330,24 @@
     document.documentElement.lang = lang === 'zh' ? 'zh-CN' : lang === 'ur' ? 'ur' : 'en';
     document.documentElement.dir = lang === 'ur' ? 'rtl' : 'ltr';
 
-    document.title = t(lang, 'meta_title');
+    document.title = t(lang, 'meta_title') || document.title;
     var metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.setAttribute('content', t(lang, 'meta_desc'));
+    if (metaDesc) {
+      var desc = t(lang, 'meta_desc');
+      if (desc) metaDesc.setAttribute('content', desc);
+    }
 
     document.querySelectorAll('[data-i18n]').forEach(function (el) {
       if (el.closest('.logo')) return;
-      el.textContent = t(lang, el.getAttribute('data-i18n'));
+      var key = el.getAttribute('data-i18n');
+      var text = t(lang, key);
+      if (text != null) el.textContent = text;
     });
     document.querySelectorAll('[data-i18n-html]').forEach(function (el) {
       if (el.closest('.logo')) return;
-      el.innerHTML = t(lang, el.getAttribute('data-i18n-html'));
+      var key = el.getAttribute('data-i18n-html');
+      var html = t(lang, key);
+      if (html != null) el.innerHTML = html;
     });
 
     updateLangPickerUI(lang);

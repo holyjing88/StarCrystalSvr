@@ -134,8 +134,17 @@ EOF
 
 smoke_test() {
   need_cmd curl
-  curl -fsS --max-time 8 "$SITE_URL/" | grep -qiE 'Xinglan Wujie|星澜' \
+  local html i18n
+  html="$(curl -fsS --max-time 8 "$SITE_URL/")"
+  i18n="$(curl -fsS --max-time 8 "$SITE_URL/i18n.js")"
+  echo "$html" | grep -qiE 'Xinglan Wujie|星澜' \
     || die "smoke failed: $SITE_URL/"
+  echo "$html" | grep -q 'Privacy Policies' \
+    || die "smoke failed: privacy section fallback text missing on $SITE_URL/"
+  echo "$html" | grep -q 'i18n.js?v=' \
+    || die "smoke failed: index.html missing i18n.js cache-bust query"
+  echo "$i18n" | grep -q "privacy_title: 'Privacy Policies'" \
+    || die "smoke failed: deployed i18n.js missing privacy_title translation"
   log "smoke OK $SITE_URL/"
 }
 
