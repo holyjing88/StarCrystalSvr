@@ -1,0 +1,68 @@
+{
+  "channels": {
+    "CompanyOwned": {
+      "LoginRoot/invitecode/Title": {
+        "zh": "上下级一起赚钱",
+        "en": "Earn Together",
+        "ur": "مل کر کمائیں"
+      },
+      "LoginRoot/invitecode/inviteduserid/Placeholder": {
+        "zh": "一起赚钱",
+        "en": "Earn Together",
+        "ur": "مل کر کمائیں"
+      },
+      "WelfarePage/Scroll View/Viewport/Content/WelfareInfo/GetTokenButton": {
+        "zh": "提取现金",
+        "en": "WithdrawCash",
+        "ur": "نقد رقم نکالیں"
+      },
+      "WelfarePage/Scroll View/Viewport/Content/WelfareInfo/curToken": {
+        "zh": "当前现金额:",
+        "en": "CurCash:",
+        "ur": "موجودہ نقد رقم:"
+      },
+      "WelfarePage/Scroll View/Viewport/Content/WelfareInfo/totalToken": {
+        "zh": "总现金额:",
+        "en": "TotalCash:",
+        "ur": "کل نقد رقم:"
+      },
+      "MinePage/teaminfotop/GetMyTeamButton": {
+        "zh": "获取团队收益数据",
+        "en": "GetTeamEarnings",
+        "ur": "ٹیم کی کمائی"
+      }
+    },
+    "GooglePlay": {
+      "LoginRoot/invitecode/Title": {
+        "zh": "师徒感恩福利",
+        "en": "Gratitude Welfare",
+        "ur": "شکریہ فوائد"
+      },
+      "LoginRoot/invitecode/inviteduserid/Placeholder": {
+        "zh": "感恩福利",
+        "en": "Gratitude Welfare",
+        "ur": "شکریہ فوائد"
+      },
+      "WelfarePage/Scroll View/Viewport/Content/WelfareInfo/GetTokenButton": {
+        "zh": "兑换积分",
+        "en": "RedeemPoints",
+        "ur": "پوائنٹس چھڑائیں"
+      },
+      "WelfarePage/Scroll View/Viewport/Content/WelfareInfo/curToken": {
+        "zh": "CurPoint:",
+        "en": "CurPoint:",
+        "ur": "CurPoint:"
+      },
+      "WelfarePage/Scroll View/Viewport/Content/WelfareInfo/totalToken": {
+        "zh": "TotalPoint:",
+        "en": "TotalPoint:",
+        "ur": "TotalPoint:"
+      },
+      "MinePage/teaminfotop/GetMyTeamButton": {
+        "zh": "获取师徒关系",
+        "en": "Master-apprenticeRelationship",
+        "ur": "ماسٹر اپرنٹس کا رشتہ حاصل کرنا"
+      }
+    }
+  }
+}

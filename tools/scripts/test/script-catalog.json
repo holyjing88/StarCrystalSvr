@@ -1,0 +1,18 @@
+{
+  "schema": 2,
+  "releaseRoot": "server-go/release",
+  "toolsScriptsRoot": "server-go/tools/scripts",
+  "description": "release/ 仅 startsvr|stopsvr；其余运维脚本在 tools/scripts/。验收：.\\tools\\scripts\\test-scripts.ps1 或 bash tools/scripts/test-scripts.sh",
+  "cases": [
+    { "id": "SCR-S-CONFIG-W", "platform": "windows", "tier": "static", "target": "StarcrystalConfig.ps1", "verify": "RELEASE_ROOT=release" },
+    { "id": "SCR-S-CONFIG-L", "platform": "linux", "tier": "static", "target": "starcrystal-config.sh", "verify": "RELEASE_ROOT=release" },
+    { "id": "SCR-S-ENTRY-W", "platform": "windows", "tier": "static", "target": "tools/scripts/*.ps1 + release/startsvr.ps1|stopsvr.ps1", "verify": "语法解析" },
+    { "id": "SCR-S-ENTRY-L", "platform": "linux", "tier": "static", "target": "tools/scripts/*.sh + release/startsvr.sh|stopsvr.sh", "verify": "bash -n" },
+    { "id": "SCR-L-REDIS", "platform": "windows|linux", "tier": "live", "target": "redis-start → redis-stop", "verify": "测试端口 PONG/监听" },
+    { "id": "SCR-L-MYSQL", "platform": "windows|linux", "tier": "live", "target": "dbscripts/mysql/mysql-start → mysql-stop", "verify": "便携 mysqld" },
+    { "id": "SCR-L-STARTDB", "platform": "windows|linux", "tier": "live", "target": "dbscripts/startdb → stopdb", "verify": "MySQL+Redis" },
+    { "id": "SCR-L-STARTSVR", "platform": "windows|linux", "tier": "live", "target": "release/startsvr → /healthz → release/stopsvr", "verify": "API 二进制" },
+    { "id": "SCR-L-STARTALL", "platform": "windows|linux", "tier": "live", "target": "startallsvr → stopallsvr", "verify": "SCRIPTS_TEST_FULL=1" },
+    { "id": "SCR-S-BUILD", "platform": "windows|linux", "tier": "live-optional", "target": "build.ps1|build.sh", "verify": "go build → release/starcrystalsvr" }
+  ]
+}

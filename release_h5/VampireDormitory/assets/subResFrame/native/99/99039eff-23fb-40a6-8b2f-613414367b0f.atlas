@@ -1,0 +1,13 @@
+
+huo.png
+size: 220,232
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+asdf
+  rotate: false
+  xy: 2, 2
+  size: 216, 228
+  orig: 232, 232
+  offset: 4, 4
+  index: -1

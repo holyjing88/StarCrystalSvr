@@ -1,0 +1,42 @@
+{
+  /*
+   * 节奏配置（游戏启动时加载）。
+   * - parkSlidePxPerMs：越大，停车位/道路上的滑动越快。
+   * - 带 Ms 的字段：毫秒越小，对应动画/间隔越快。
+   * 修改后若未生效：强制刷新页面或清 CDN/浏览器缓存。
+   */
+
+  // ---------- 停车位内移动、道路分段滑动（速度 ×2：px/ms×2，相关时长÷2）----------
+  "parkSlidePxPerMs": 3,
+  "parkSlideMinMs": 15,
+  "parkSlideFallbackExtraMs": 24,
+
+  // ---------- 沿道路多段路径 ----------
+  "roadSegmentFallbackExtraMs": 27,
+
+  // ---------- 飞入中间停车格 ----------
+  "parkFlyMs": 87,
+  "parkFlyFinishExtraMs": 20,
+
+  // ---------- 中间格射击（×2 射速 / 弹速：时长 ÷2）----------
+  "bulletFlyMs": 16,
+  "bulletGapMs": 3,
+  "bulletCleanupExtraMs": 10,
+
+  // ---------- 中间车位炮塔瞄准后再开火 ----------
+  "parkTurretAimMs": 25,
+
+  // ---------- 上方目标区（下落 ×2）----------
+  "tgElimAnimMs": 26,
+  "tgFallMs": 25,
+  "gravityFallFinishExtraMs": 6,
+
+  // ---------- 入库后首开 ----------
+  "parkToElimMs": 25,
+
+  // ---------- 道具连波 ----------
+  "chainGapMs": 25,
+
+  // ---------- 底行同色轮询 ----------
+  "parkShootPollMs": 25
+}

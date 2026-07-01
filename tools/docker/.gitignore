@@ -1,0 +1,8 @@
+# 导出的镜像 tar（save 产物）
+mirror_save/mysql/*.tar
+mirror_save/redis/*.tar
+mirror_save/release/*.tar
+!mirror_save/README.txt
+!mirror_save/mysql/.gitkeep
+!mirror_save/redis/.gitkeep
+!mirror_save/release/.gitkeep

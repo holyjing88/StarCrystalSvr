@@ -1,0 +1,2 @@
+# StarCrystal Docker Redis 定时备份（容器内 crond；勿改路径除非同步改 Dockerfile）
+0 3 * * * PORT=6379 REDIS_CLI=/usr/local/bin/redis-cli REDIS_DIR=/data BACKUP_ROOT=/data/backups /opt/starcrystal/redis-scripts/redis-backup.sh >>/data/backups/cron.log 2>&1

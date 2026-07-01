@@ -1,0 +1,139 @@
+
+bingren.png
+size: 942,211
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+1
+  rotate: true
+  xy: 742, 101
+  size: 108, 100
+  orig: 109, 101
+  offset: 0, 1
+  index: -1
+11a
+  rotate: true
+  xy: 638, 99
+  size: 110, 102
+  orig: 110, 102
+  offset: 0, 0
+  index: -1
+1a
+  rotate: false
+  xy: 402, 103
+  size: 118, 106
+  orig: 118, 106
+  offset: 0, 0
+  index: -1
+1b
+  rotate: false
+  xy: 281, 98
+  size: 119, 111
+  orig: 119, 111
+  offset: 0, 0
+  index: -1
+1c
+  rotate: false
+  xy: 2, 104
+  size: 142, 105
+  orig: 142, 109
+  offset: 0, 0
+  index: -1
+1d
+  rotate: false
+  xy: 146, 99
+  size: 133, 110
+  orig: 133, 110
+  offset: 0, 0
+  index: -1
+1e
+  rotate: false
+  xy: 522, 101
+  size: 114, 108
+  orig: 114, 108
+  offset: 0, 0
+  index: -1
+2
+  rotate: false
+  xy: 104, 19
+  size: 70, 78
+  orig: 72, 78
+  offset: 2, 0
+  index: -1
+3
+  rotate: false
+  xy: 176, 19
+  size: 55, 24
+  orig: 56, 24
+  offset: 1, 0
+  index: -1
+5
+  rotate: false
+  xy: 176, 19
+  size: 55, 24
+  orig: 56, 24
+  offset: 1, 0
+  index: -1
+4
+  rotate: false
+  xy: 547, 7
+  size: 46, 94
+  orig: 48, 94
+  offset: 0, 0
+  index: -1
+6
+  rotate: false
+  xy: 500, 6
+  size: 47, 93
+  orig: 48, 94
+  offset: 0, 0
+  index: -1
+7
+  rotate: false
+  xy: 645, 37
+  size: 38, 60
+  orig: 39, 61
+  offset: 1, 0
+  index: -1
+8
+  rotate: false
+  xy: 594, 13
+  size: 49, 69
+  orig: 50, 70
+  offset: 0, 1
+  index: -1
+9
+  rotate: true
+  xy: 844, 101
+  size: 108, 95
+  orig: 108, 95
+  offset: 0, 0
+  index: -1
+Soft
+  rotate: false
+  xy: 2, 2
+  size: 100, 100
+  orig: 102, 102
+  offset: 1, 1
+  index: -1
+yun1
+  rotate: false
+  xy: 176, 45
+  size: 103, 51
+  orig: 103, 51
+  offset: 0, 0
+  index: -1
+yun2
+  rotate: false
+  xy: 281, 46
+  size: 105, 50
+  orig: 105, 50
+  offset: 0, 0
+  index: -1
+yun3
+  rotate: false
+  xy: 388, 50
+  size: 110, 46
+  orig: 110, 46
+  offset: 0, 0
+  index: -1

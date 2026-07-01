@@ -1,0 +1,55 @@
+
+xiaochou.png
+size: 359,339
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+Soft
+  rotate: false
+  xy: 181, 213
+  size: 124, 124
+  orig: 124, 124
+  offset: 0, 0
+  index: -1
+arm_left
+  rotate: false
+  xy: 307, 217
+  size: 50, 120
+  orig: 50, 120
+  offset: 0, 0
+  index: -1
+arm_right
+  rotate: true
+  xy: 2, 7
+  size: 50, 189
+  orig: 50, 189
+  offset: 0, 0
+  index: -1
+body
+  rotate: false
+  xy: 181, 73
+  size: 91, 138
+  orig: 91, 141
+  offset: 0, 0
+  index: -1
+header
+  rotate: false
+  xy: 2, 59
+  size: 177, 278
+  orig: 186, 280
+  offset: 2, 0
+  index: -1
+leg_left
+  rotate: true
+  xy: 193, 2
+  size: 69, 132
+  orig: 69, 132
+  offset: 0, 0
+  index: -1
+leg_right
+  rotate: false
+  xy: 274, 79
+  size: 61, 132
+  orig: 69, 132
+  offset: 0, 0
+  index: -1

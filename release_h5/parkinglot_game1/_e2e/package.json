@@ -1,0 +1,11 @@
+{
+  "name": "parkinglot-game1-e2e",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node smoke.mjs"
+  },
+  "dependencies": {
+    "playwright": "1.59.1"
+  }
+}

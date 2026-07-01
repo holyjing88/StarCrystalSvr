@@ -1,0 +1,6 @@
+{
+  "authMysqlDsn": "star_auth:jgyjgyjgy@tcp(127.0.0.1:3306)/starcrystal_auth?charset=utf8mb4&parseTime=true&loc=Local",
+  "redisAddr": "127.0.0.1:6379",
+  "redisPassword": "",
+  "redisDb": 0
+}

@@ -1,0 +1,7 @@
+# 供 docker_release.sh build 时复制为 release/.dockerignore（不打包二进制与 log 内容）
+starcrystalsvr
+starcrystalsvr.exe
+log/*
+!log/.gitkeep
+*.pid
+**/node_modules

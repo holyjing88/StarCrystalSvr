@@ -1,0 +1,181 @@
+<!doctype html>
+<!-- game2 index · games.json entryUrl 建议带 ?v= 防缓存 -->
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>极速跳跃</title>
+  <style>
+    html { height: 100%; }
+    html, body { margin: 0; padding: 0; background: #101b14; color: #e9ffe9; font-family: system-ui, Arial, sans-serif; }
+    body { min-height: 100%; overflow-x: hidden; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+    .wrap {
+      min-height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      flex-direction: column;
+      gap: 12px;
+      padding: max(16px, env(safe-area-inset-top, 0px)) 16px max(24px, env(safe-area-inset-bottom, 0px));
+      box-sizing: border-box;
+    }
+    .stats {
+      display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; width: 100%; max-width: 420px; font-size: 14px;
+    }
+    .pill { background: #15261a; padding: 6px 12px; border-radius: 999px; border: 1px solid #41d36f44; }
+    .lane {
+      position: relative;
+      width: min(92vw, 400px);
+      height: 120px;
+      background: linear-gradient(180deg, #1a3024 0%, #0d1810 100%);
+      border-radius: 16px;
+      overflow: hidden;
+      border: 2px solid #2a5c3e;
+    }
+    .ground {
+      position: absolute; left: 0; right: 0; bottom: 0; height: 28px;
+      background: repeating-linear-gradient(90deg, #3d7a52 0 24px, #2f6142 24px 48px);
+    }
+    .ball {
+      position: absolute;
+      left: 50%;
+      margin-left: -21px;
+      bottom: 28px;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #8ef5a8, #41d36f);
+      box-shadow: 0 4px 12px rgba(0,0,0,.4);
+      transition: transform .16s ease;
+      z-index: 2;
+    }
+    .ball.air { transform: translateY(-72px); }
+    .btnRow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      align-items: stretch;
+      width: 100%;
+      max-width: 420px;
+    }
+    .btnRow button {
+      flex: 1 1 140px;
+      min-width: 120px;
+      border: 0;
+      border-radius: 12px;
+      padding: 14px 14px;
+      font-size: 16px;
+      background: #1ea54b;
+      color: #fff;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,.35);
+    }
+    .btnRow button.secondary { background: #2a6b8f; }
+    .btnRow button.ad { background: #6f42c1; }
+    button:disabled { opacity: 0.55; cursor: not-allowed; }
+    #adStatus { font-size: 13px; max-width: 420px; text-align: center; line-height: 1.45; min-height: 2.9em; color: #a8d4b8; width: 100%; }
+    .hint { font-size: 11px; color: #6a8f76; max-width: 420px; text-align: center; line-height: 1.35; width: 100%; }
+    h2 { margin: 0; font-size: 1.25rem; text-align: center; max-width: 420px; }
+    code { font-size: 10px; word-break: break-all; }
+    .comboFlash { animation: pulse .35s ease; }
+    @keyframes pulse { 50% { transform: scale(1.06); } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h2>极速跳跃 · 连击得分</h2>
+    <div class="stats">
+      <span class="pill">体力 <strong id="energy">—</strong></span>
+      <span class="pill">得分 <strong id="score">0</strong></span>
+      <span class="pill">连击 ×<strong id="combo">1</strong></span>
+      <span class="pill">最佳 <strong id="best">0</strong></span>
+    </div>
+    <div class="lane" id="lane">
+      <div id="ball" class="ball"></div>
+      <div class="ground"></div>
+    </div>
+    <div class="btnRow">
+      <button type="button" id="jump">跳跃躲避</button>
+      <button type="button" id="btnSlow" class="secondary">减速模式</button>
+      <button type="button" id="btnRewarded" class="ad">激励：+25 体力</button>
+    </div>
+    <div id="adStatus" aria-live="polite"></div>
+    <p class="hint">每次跳跃消耗体力；在约 <strong>0.85s</strong> 内连续跳跃可叠连击倍率加分。<span style="color:#ffd43b">商业化</span>：体力上限与激励补给（<code>g002</code>）。</p>
+  </div>
+  <script src="../js/crystabox-ad.js"></script>
+  <script>
+    (function () {
+      var STORAGE = 'g002_speedjump_v1';
+      var state = load();
+      var energy = 10;
+      var score = 0;
+      var combo = 1;
+      var lastJumpAt = 0;
+      var slowMode = false;
+      var COMBO_MS = 850;
+
+      function load() {
+        try {
+          var j = JSON.parse(localStorage.getItem(STORAGE) || '{}');
+          return { best: Math.max(0, parseInt(j.best, 10) || 0) };
+        } catch (e) { return { best: 0 }; }
+      }
+      function save() {
+        localStorage.setItem(STORAGE, JSON.stringify({ best: state.best }));
+      }
+
+      var ball = document.getElementById('ball');
+
+      function doJump() {
+        if (energy <= 0) {
+          document.getElementById('adStatus').textContent = '体力不足，请看激励广告补充体力。';
+          return;
+        }
+        energy--;
+        ball.classList.add('air');
+        setTimeout(function () { ball.classList.remove('air'); }, 160);
+
+        var now = Date.now();
+        if (now - lastJumpAt < COMBO_MS) combo = Math.min(combo + 1, 16);
+        else combo = 1;
+        lastJumpAt = now;
+        var rhythmBonus = slowMode ? 1 : 1.15;
+        var pts = Math.floor(12 * combo * rhythmBonus);
+        score += pts;
+        if (score > state.best) {
+          state.best = score;
+          save();
+        }
+        document.getElementById('combo').parentElement.classList.add('comboFlash');
+        setTimeout(function () {
+          document.getElementById('combo').parentElement.classList.remove('comboFlash');
+        }, 350);
+        document.getElementById('energy').textContent = energy;
+        document.getElementById('score').textContent = score;
+        document.getElementById('combo').textContent = combo;
+        document.getElementById('best').textContent = state.best;
+      }
+
+      document.getElementById('jump').addEventListener('click', doJump);
+      document.getElementById('btnSlow').addEventListener('click', function () {
+        slowMode = !slowMode;
+        this.textContent = slowMode ? '常速模式' : '减速模式';
+      });
+
+      CrystaBoxH5Ad.bindRewardedUI(
+        document.getElementById('btnRewarded'),
+        document.getElementById('adStatus'),
+        'g002',
+        function () {
+          energy += 25;
+          document.getElementById('energy').textContent = energy;
+        }
+      );
+
+      document.getElementById('energy').textContent = energy;
+      document.getElementById('best').textContent = state.best;
+    })();
+  </script>
+</body>
+</html>

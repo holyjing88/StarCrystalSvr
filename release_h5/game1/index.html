@@ -1,0 +1,1194 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>消除宝石</title>
+  <style>
+    html { height: 100%; touch-action: none; }
+    html, body { margin: 0; padding: 0; background: #0b1320; color: #ecf2ff; font-family: system-ui, Arial, sans-serif; touch-action: none; }
+    body { min-height: 100%; padding: max(12px, env(safe-area-inset-top)) 12px max(20px, env(safe-area-inset-bottom)); box-sizing: border-box; }
+    h2 { margin: 0 0 8px; font-size: 1.15rem; text-align: center; }
+    .top { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; align-items: center; margin-bottom: 10px; font-size: 14px; }
+    .pill { background: #1a2744; padding: 6px 12px; border-radius: 999px; border: 1px solid #2d7cff44; }
+    .gridWrap {
+      display: flex;
+      justify-content: center;
+      margin: 8px 0;
+      position: relative;
+    }
+    .cascadeFxLayer {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: min(92vw, 360px);
+      aspect-ratio: 1;
+      transform: translate(-50%, -50%);
+      pointer-events: none !important;
+      z-index: 60;
+      overflow: visible;
+    }
+    .gridWrap.cascade-shake {
+      animation: cascadeShake 0.38s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+    }
+    @keyframes cascadeShake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-4px) rotate(-0.4deg); }
+      40% { transform: translateX(5px) rotate(0.5deg); }
+      60% { transform: translateX(-3px); }
+      80% { transform: translateX(2px); }
+    }
+    .grid.cascade-flash {
+      animation: cascadeBoardFlash 0.38s ease-out both;
+    }
+    @keyframes cascadeBoardFlash {
+      0% { filter: brightness(1) saturate(1); box-shadow: 0 0 0 0 rgba(255, 212, 59, 0); }
+      35% { filter: brightness(1.18) saturate(1.15); box-shadow: 0 0 28px 4px rgba(255, 212, 59, 0.35); }
+      100% { filter: brightness(1) saturate(1); box-shadow: 0 0 0 0 rgba(255, 212, 59, 0); }
+    }
+    .comboPopup {
+      position: absolute;
+      left: 50%;
+      top: 42%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      animation: comboPopIn 0.55s cubic-bezier(0.34, 1.4, 0.64, 1) forwards;
+      pointer-events: none;
+    }
+    .comboPopup-main {
+      display: block;
+      font-size: clamp(1.35rem, 5.5vw, 1.85rem);
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      background: linear-gradient(180deg, #fff9e6 0%, #ffd43b 45%, #f08c00 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      filter: drop-shadow(0 2px 3px rgba(0,0,0,.45)) drop-shadow(0 0 14px rgba(255, 212, 59, 0.55));
+      text-shadow: none;
+    }
+    .comboPopup-sub {
+      display: block;
+      margin-top: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #a5d8ff;
+      text-shadow: 0 1px 8px rgba(74, 180, 255, 0.7);
+    }
+    @keyframes comboPopIn {
+      0% { opacity: 0; transform: translate(-50%, -40%) scale(0.35); }
+      55% { opacity: 1; transform: translate(-50%, -50%) scale(1.08); }
+      75% { transform: translate(-50%, -50%) scale(0.98); }
+      100% { opacity: 0; transform: translate(-50%, -56%) scale(1); }
+    }
+    .comboSpark {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 120%;
+      height: 120%;
+      transform: translate(-50%, -50%);
+      background: radial-gradient(circle, rgba(255,230,120,0.45) 0%, rgba(255,180,50,0.15) 35%, transparent 65%);
+      animation: sparkBurst 0.45s ease-out forwards;
+      pointer-events: none;
+    }
+    @keyframes sparkBurst {
+      0% { opacity: 0; transform: translate(-50%, -50%) scale(0.4); }
+      30% { opacity: 1; }
+      100% { opacity: 0; transform: translate(-50%, -50%) scale(1.35); }
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 3px;
+      width: min(92vw, 360px);
+      aspect-ratio: 1;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+      position: relative;
+      z-index: 10;
+    }
+    .cell {
+      border-radius: 8px;
+      cursor: grab;
+      box-shadow: inset 0 -3px rgba(0,0,0,.25);
+      position: relative;
+      transition: box-shadow .15s ease;
+    }
+    .cell.dragging { cursor: grabbing; z-index: 40; box-shadow: 0 14px 32px rgba(0,0,0,.48); }
+    .cell.dragHint { box-shadow: 0 0 0 2px #ffd43b, 0 4px 16px rgba(255,212,59,.35); z-index: 25; position: relative; }
+    .c0 { background: linear-gradient(145deg, #ff6b6b, #c92a2a); }
+    .c1 { background: linear-gradient(145deg, #69db7c, #2f9e44); }
+    .c2 { background: linear-gradient(145deg, #74c0fc, #1971c2); }
+    .c3 { background: linear-gradient(145deg, #ffd43b, #f08c00); }
+    .c4 { background: linear-gradient(145deg, #da77f2, #9c36b5); }
+    .c5 { background: linear-gradient(145deg, #5eead4, #0d9488); }
+    .gem--swapFlash {
+      animation: gemSwapFlash 0.32s ease-out both;
+      z-index: 8;
+    }
+    @keyframes gemSwapFlash {
+      0% { transform: scale(1); filter: brightness(1); }
+      40% { transform: scale(1.1); filter: brightness(1.35); box-shadow: 0 0 22px rgba(255, 255, 255, 0.35); }
+      100% { transform: scale(1); filter: brightness(1); box-shadow: inset 0 -3px rgba(0,0,0,.25); }
+    }
+    .gem--clear {
+      animation: gemPop 0.32s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+      z-index: 5;
+    }
+    @keyframes gemPop {
+      0% { transform: scale(1); opacity: 1; filter: brightness(1); }
+      40% { transform: scale(1.12); filter: brightness(1.35); }
+      100% { transform: scale(0); opacity: 0; filter: brightness(1.6); }
+    }
+    /** 下落动画由 JS 按格测量步长 + translateY 过渡（贴合真实占位位移）；此类仅提层避免遮挡怪异 */
+    .gem--fall {
+      position: relative;
+      z-index: 4;
+    }
+    /** 通关 celebration：整盘宝石依次爆裂消散（市面同类常见收尾反馈） */
+    .grid.grid--winBurst {
+      animation: gridWinBurst 0.5s ease-out both;
+    }
+    @keyframes gridWinBurst {
+      0%, 100% { filter: brightness(1); }
+      35% { filter: brightness(1.22) saturate(1.18); }
+    }
+    .cell.gem--winExplode {
+      animation-name: gemWinExplode;
+      animation-duration: 0.52s;
+      animation-timing-function: cubic-bezier(0.36, 0.92, 0.45, 1);
+      animation-fill-mode: forwards;
+      pointer-events: none;
+      z-index: 35;
+      position: relative;
+    }
+    @keyframes gemWinExplode {
+      0% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+        filter: brightness(1) saturate(1);
+        box-shadow: inset 0 -3px rgba(0, 0, 0, 0.25);
+      }
+      28% {
+        transform: scale(1.26) rotate(var(--gemTwist, 8deg));
+        opacity: 1;
+        filter: brightness(1.75) saturate(1.35);
+        box-shadow:
+          0 0 22px rgba(255, 255, 255, 0.95),
+          0 0 44px rgba(255, 212, 90, 0.65),
+          0 0 60px rgba(255, 120, 60, 0.35);
+      }
+      100% {
+        transform: scale(0) rotate(21deg);
+        opacity: 0;
+        filter: brightness(2) blur(1px);
+        box-shadow: none;
+      }
+    }
+    .btnRow { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 12px; max-width: 420px; margin-left: auto; margin-right: auto; }
+    button {
+      border: 0; border-radius: 12px; padding: 12px 14px; font-size: 15px;
+      background: #2d7cff; color: #fff; cursor: pointer; flex: 1 1 140px; min-width: 120px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.35);
+    }
+    button.secondary { background: #3d5a80; }
+    button.ad { background: #6f42c1; }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+    #adStatus { font-size: 13px; text-align: center; min-height: 2.8em; line-height: 1.4; color: #9fb3d9; margin-top: 10px; max-width: 420px; margin-left: auto; margin-right: auto; }
+    .hint { font-size: 11px; color: #5c6f91; text-align: center; margin-top: 8px; max-width: 420px; margin-left: auto; margin-right: auto; line-height: 1.35; }
+    .tag2x { color: #ffd43b; font-weight: 600; }
+    .pill-level { cursor: pointer; user-select: none; border-color: #ffd43b55; }
+    .pill-level:active { filter: brightness(1.08); }
+    .levelModal { position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center; padding: 16px; box-sizing: border-box; }
+    .levelModal[hidden] { display: none !important; }
+    .levelModal-backdrop { position: absolute; inset: 0; background: rgba(5, 10, 22, 0.75); touch-action: none; }
+    .levelModal-panel {
+      position: relative; background: #152238; border: 1px solid #2d7cff55; border-radius: 16px;
+      padding: 14px 14px 16px; max-width: 400px; width: 100%; max-height: min(78vh, 540px); overflow: auto;
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55);
+    }
+    .levelModal-panel h3 { margin: 0 0 10px; font-size: 1rem; text-align: center; color: #dbe7ff; }
+    .levelModal-sub { font-size: 11px; color: #7d93b8; text-align: center; margin-bottom: 12px; line-height: 1.35; }
+    .levelGrid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 7px; }
+    .levelGrid .lvBtn {
+      border: 0; border-radius: 10px; padding: 8px 4px; font-size: 13px; font-weight: 700;
+      background: #2d4a7c; color: #fff; cursor: pointer; min-width: 0;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35); line-height: 1.2;
+    }
+    .levelGrid .lvBtn small { display: block; font-size: 9px; font-weight: 600; margin-top: 3px; opacity: 0.92; color: #ffd43b; letter-spacing: -0.02em; }
+    .levelGrid .lvBtn.lv-locked { opacity: 0.35; cursor: not-allowed; pointer-events: none; }
+    .levelGrid .lvBtn.lv-current { box-shadow: 0 0 0 2px #ffd43b, 0 2px 8px rgba(0, 0, 0, 0.4); }
+    .levelModal-actions { margin-top: 14px; display: flex; justify-content: center; }
+    .levelModal-actions button { flex: 0 1 auto; min-width: 120px; padding: 10px 18px; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <h2>消除宝石 · 闯关模式</h2>
+  <div class="top">
+    <span class="pill pill-level" id="levelPill" role="button" tabindex="0" title="点击选关">关卡 <strong id="levelNum">1</strong> / <span id="levelTotal">45</span> <span id="levelStarsDisp" class="tag2x"></span></span>
+    <span class="pill">金币 <strong id="coins">0</strong></span>
+    <span class="pill">步数 <strong id="moves">30</strong></span>
+    <span class="pill">目标 <strong id="target">1200</strong></span>
+    <span class="pill">得分 <strong id="score">0</strong></span>
+    <span class="pill" id="multPill" style="display:none">本局 <span class="tag2x">金币×2</span></span>
+  </div>
+  <div class="gridWrap" id="gridWrap">
+    <div id="grid" class="grid"></div>
+    <div class="cascadeFxLayer" id="cascadeFxLayer" aria-hidden="true" style="pointer-events:none"></div>
+  </div>
+  <div class="btnRow">
+    <button type="button" id="btnLevels" class="secondary">选关</button>
+    <button type="button" id="btnNew">重开本关</button>
+    <button type="button" id="btnAdMoves" class="ad">激励：+5 步</button>
+    <button type="button" id="btnAdDouble" class="ad">激励：本局金币×2</button>
+  </div>
+  <div id="levelModal" class="levelModal" hidden aria-hidden="true">
+    <div class="levelModal-backdrop" id="levelModalBackdrop"></div>
+    <div class="levelModal-panel" role="dialog" aria-labelledby="levelModalTitle">
+      <h3 id="levelModalTitle">选择关卡</h3>
+      <p class="levelModal-sub">通关解锁下一关；目标分与步数随关卡提高，后期引入 6 色块更难成匹配（同类产品设计）。</p>
+      <div id="levelGrid" class="levelGrid"></div>
+      <div class="levelModal-actions">
+        <button type="button" id="levelModalClose" class="secondary">关闭</button>
+      </div>
+    </div>
+  </div>
+  <div id="adStatus" aria-live="polite"></div>
+  <p class="hint">与 <strong>Candy Crush / Bejeweled</strong> 同类：<strong>横或纵直线≥3</strong>消除；相邻交换仅在<strong>交换的两格之一</strong>形成直线匹配时生效；消除后<strong>按列下落</strong>、空缺<strong>随机补块</strong>并连锁判定；开局无预制三连。<strong>共多关</strong>，难度递增；三星评价依本关得分档。<span class="tag2x">商业化</span>：激励（<code>g001</code>）。</p>
+  <script src="../js/crystabox-ad.js"></script>
+  <script>
+    (function () {
+      var ROWS = 8, COLS = 8;
+      /** 当前关卡实际使用的颜色数量（4～6，越多越难随机成三连） */
+      var activeColors = 5;
+      /** 总关卡数；前几关手写曲线，之后公式外推（市面闯关常见做法） */
+      var LEVEL_COUNT = 45;
+      /**
+       * 目标分刻意抬高前几关，避免「一两次连锁就过关」；配合消除/下落动画，
+       * 新手前几关通常也需多步操作（体感上单关时长约从十余秒量级再随关卡拉长）。
+       */
+      var LEVEL_BOOTSTRAP = [
+        { moves: 38, target: 2850, colors: 4 },
+        { moves: 37, target: 3080, colors: 4 },
+        { moves: 36, target: 3320, colors: 4 },
+        { moves: 35, target: 3580, colors: 5 },
+        { moves: 34, target: 3840, colors: 5 },
+        { moves: 33, target: 4120, colors: 5 },
+        { moves: 32, target: 4420, colors: 5 },
+        { moves: 31, target: 4720, colors: 5 },
+        { moves: 30, target: 5040, colors: 5 },
+        { moves: 29, target: 5380, colors: 5 },
+        { moves: 28, target: 5740, colors: 6 },
+        { moves: 27, target: 6120, colors: 6 },
+        { moves: 26, target: 6520, colors: 6 },
+        { moves: 25, target: 6940, colors: 6 },
+        { moves: 24, target: 7380, colors: 6 },
+        { moves: 23, target: 7840, colors: 6 },
+        { moves: 22, target: 8320, colors: 6 },
+        { moves: 21, target: 8820, colors: 6 }
+      ];
+      /**
+       * Candy Crush / Bejeweled 式核心管线（逻辑层）：
+       * 1) 初始棋盘：无直线三连（随机重Roll）。
+       * 2) 合法交换：仅相邻换；试探 swap 后若「交换的两格之一」在横或纵方向连成≥3 则接受，否则动画回退。
+       * 3) 匹配：全盘扫描所有横向 runs、纵向 runs，长度≥3 的格子并入消除集合（十字重叠同一格只消一次）。
+       * 4) 消除 → 按列重力下落 → 顶端随机生成新颜色 → 回到步骤3直至无匹配。
+       */
+      var MIN_MATCH = 3;
+      var MAX_CASCADE = 48;
+      var STORAGE = 'g001_gemcrush_v1';
+      var CLEAR_MS = 320;
+      /** 重力占位落子动画时长（与 resolveBoard 等待对齐，避免下一波判定时尚在空中） */
+      var FALL_ANIM_MS = 300;
+      /** 通关全屏爆裂单格动画时长（与 stagger 叠加见 playWinBoardExplodeThen） */
+      var WIN_CELL_EXPLODE_MS = 520;
+      var state = load();
+      var grid = [];
+      var moves = 30;
+      var score = 0;
+      var target = 1200;
+      var doubleCoinRun = false;
+      var gridEl = document.getElementById('grid');
+      var gridWrapEl = document.getElementById('gridWrap');
+      var cascadeFxLayerEl = document.getElementById('cascadeFxLayer');
+      var locked = false;
+      var drag = null;
+      var cascadeDepth = 0;
+      /** 本局开始时刻（用于前几关「最短通关耗时」下限，避免巨连锁秒结束） */
+      var roundStartedAt = 0;
+
+      function load() {
+        try {
+          var j = JSON.parse(localStorage.getItem(STORAGE) || '{}');
+          var coins = Math.max(0, parseInt(j.coins, 10) || 0);
+          var best = Math.max(0, parseInt(j.best, 10) || 0);
+          var maxUnlocked = Math.max(1, Math.min(LEVEL_COUNT, parseInt(j.maxUnlocked, 10) || 1));
+          var currentLevel = Math.max(1, Math.min(LEVEL_COUNT, parseInt(j.currentLevel, 10) || 1));
+          if (currentLevel > maxUnlocked) currentLevel = maxUnlocked;
+          var levelStars = {};
+          if (j.levelStars && typeof j.levelStars === 'object') {
+            for (var k in j.levelStars) {
+              var s = parseInt(j.levelStars[k], 10);
+              if (s >= 1 && s <= 3) levelStars[k] = s;
+            }
+          }
+          return { coins: coins, best: best, maxUnlocked: maxUnlocked, currentLevel: currentLevel, levelStars: levelStars };
+        } catch (e) {
+          return { coins: 0, best: 0, maxUnlocked: 1, currentLevel: 1, levelStars: {} };
+        }
+      }
+      function save() {
+        localStorage.setItem(STORAGE, JSON.stringify({
+          coins: state.coins,
+          best: state.best,
+          maxUnlocked: state.maxUnlocked,
+          currentLevel: state.currentLevel,
+          levelStars: state.levelStars
+        }));
+      }
+
+      function perfNow() {
+        return typeof performance !== 'undefined' && performance.now ? performance.now() : Date.now();
+      }
+
+      /** 前若干关：通关判定至少经历约 6s 起，每过一关略增；高位关卡不再强制以免拖沓 */
+      function minRoundMsForLevel(lv) {
+        if (lv > 12) return 0;
+        return 6000 + (lv - 1) * 320;
+      }
+
+      function getLevelDef(num) {
+        var n = Math.max(1, Math.min(LEVEL_COUNT, num));
+        var i = n - 1;
+        if (i < LEVEL_BOOTSTRAP.length) return LEVEL_BOOTSTRAP[i];
+        var last = LEVEL_BOOTSTRAP[LEVEL_BOOTSTRAP.length - 1];
+        var k = n - LEVEL_BOOTSTRAP.length;
+        return {
+          moves: Math.max(14, last.moves - k),
+          target: Math.min(17500, Math.round(last.target + k * 460 + k * k * 8)),
+          colors: 6
+        };
+      }
+
+      /** 三星评价：高分≥约 1.55×目标，中档≥约 1.12×目标（参考同类休闲闯关档） */
+      function starsEarned(sc, tg) {
+        if (sc >= Math.floor(tg * 1.55)) return 3;
+        if (sc >= Math.floor(tg * 1.12)) return 2;
+        return 1;
+      }
+
+      function starLabel(n) {
+        if (!n || n < 1) return '—';
+        return '\u2605'.repeat(n) + '\u2606'.repeat(3 - n);
+      }
+
+      function refreshLevelHud() {
+        var ln = document.getElementById('levelNum');
+        var lt = document.getElementById('levelTotal');
+        var sd = document.getElementById('levelStarsDisp');
+        if (ln) ln.textContent = String(state.currentLevel);
+        if (lt) lt.textContent = String(LEVEL_COUNT);
+        if (sd) {
+          var recorded = state.levelStars[String(state.currentLevel)] || 0;
+          sd.textContent = recorded ? ('· ' + starLabel(recorded)) : '';
+        }
+      }
+
+      function randColor() { return Math.floor(Math.random() * activeColors); }
+
+      /** 开局随机填充，直到盘面上不存在直线三连（CC / Bejeweled 开局约束） */
+      function fillGrid() {
+        var tries = 0;
+        do {
+          grid = [];
+          for (var r = 0; r < ROWS; r++) {
+            var row = [];
+            for (var c = 0; c < COLS; c++) row.push(randColor());
+            grid.push(row);
+          }
+          tries++;
+        } while (findMatchedCells().length > 0 && tries < 100);
+      }
+
+      function swapInGrid(r1, c1, r2, c2) {
+        var t = grid[r1][c1];
+        grid[r1][c1] = grid[r2][c2];
+        grid[r2][c2] = t;
+      }
+
+      /**
+       * 该格颜色是否在横向或纵向构成≥MIN_MATCH 的直线（贪心上/下/左/右延伸计数）。
+       */
+      function cellFormsLineMatch(r, c) {
+        var color = grid[r][c];
+        if (color < 0) return false;
+        var len = 1;
+        var cc;
+        for (cc = c - 1; cc >= 0 && grid[r][cc] === color; cc--) len++;
+        for (cc = c + 1; cc < COLS && grid[r][cc] === color; cc++) len++;
+        if (len >= MIN_MATCH) return true;
+        len = 1;
+        var rr;
+        for (rr = r - 1; rr >= 0 && grid[rr][c] === color; rr--) len++;
+        for (rr = r + 1; rr < ROWS && grid[rr][c] === color; rr++) len++;
+        return len >= MIN_MATCH;
+      }
+
+      /**
+       * 交换合法性（业界常用）：仅检测交换涉及的两格之一是否出现直线匹配，等价于全盘扫描但更快。
+       */
+      function wouldClearAfterSwap(r1, c1, r2, c2) {
+        swapInGrid(r1, c1, r2, c2);
+        var ok = cellFormsLineMatch(r1, c1) || cellFormsLineMatch(r2, c2);
+        swapInGrid(r1, c1, r2, c2);
+        return ok;
+      }
+
+      /** 全盘直线扫描：合并横向 runs 与纵向 runs 上的格子（十字重叠只算一颗棋） */
+      function findMatchedCells() {
+        var marked = {};
+        var out = [];
+        function addCell(r, c) {
+          var key = r + ',' + c;
+          if (marked[key]) return;
+          marked[key] = true;
+          out.push([r, c]);
+        }
+        var r, c, start, color, runLen;
+        for (r = 0; r < ROWS; r++) {
+          c = 0;
+          while (c < COLS) {
+            if (grid[r][c] < 0) {
+              c++;
+              continue;
+            }
+            color = grid[r][c];
+            start = c;
+            while (c < COLS && grid[r][c] === color) c++;
+            runLen = c - start;
+            if (runLen >= MIN_MATCH) {
+              for (var cc = start; cc < c; cc++) addCell(r, cc);
+            }
+          }
+        }
+        for (c = 0; c < COLS; c++) {
+          r = 0;
+          while (r < ROWS) {
+            if (grid[r][c] < 0) {
+              r++;
+              continue;
+            }
+            color = grid[r][c];
+            start = r;
+            while (r < ROWS && grid[r][c] === color) r++;
+            runLen = r - start;
+            if (runLen >= MIN_MATCH) {
+              for (var rr = start; rr < r; rr++) addCell(rr, c);
+            }
+          }
+        }
+        return out;
+      }
+
+      /**
+       * 按列重力（与成品三消一致），并返回下落元数据：
+       * fallRows[r,c] = 从「视觉起始格」到当前占位需要移动的 **行距数**（用于 translateY ≈ -行距×步长）。
+       * 原有棋子：起始为旧行；顶端新补块：从棋盘上方落入，行距 = rr+1+(ki-sn) 略错开同列入场。
+       */
+      function applyGravityFallMask() {
+        var fallRows = {};
+        for (var c = 0; c < COLS; c++) {
+          var kept = [];
+          var oldRows = [];
+          for (var r = ROWS - 1; r >= 0; r--) {
+            if (grid[r][c] >= 0) {
+              kept.push(grid[r][c]);
+              oldRows.push(r);
+            }
+          }
+          var sn = kept.length;
+          var need = ROWS - sn;
+          for (var i = 0; i < need; i++) kept.push(randColor());
+          for (var rr = ROWS - 1; rr >= 0; rr--) {
+            var ki = ROWS - 1 - rr;
+            grid[rr][c] = kept[ki];
+            if (ki < sn) {
+              if (oldRows[ki] !== rr) fallRows[rr + ',' + c] = rr - oldRows[ki];
+            } else {
+              fallRows[rr + ',' + c] = rr + 1 + (ki - sn);
+            }
+          }
+        }
+        return { fallRows: fallRows };
+      }
+
+      function cellEl(r, c) {
+        return gridEl.querySelector('.cell[data-r="' + r + '"][data-c="' + c + '"]');
+      }
+
+      /** 一格高度 + 行间距（与 .grid gap 一致），用于下落位移像素 */
+      function measureFallStridePx() {
+        var cell = gridEl.querySelector('.cell');
+        if (!cell) return 46;
+        var h = cell.getBoundingClientRect().height;
+        var gStr = getComputedStyle(gridEl).rowGap || getComputedStyle(gridEl).gap || '3px';
+        var g = parseFloat(gStr) || 3;
+        return h + g;
+      }
+
+      /** FLIP：先在目标格绘制，再从「上方」整格步长之和平滑落到 translateY(0) */
+      function runFallAnimations(fallRows) {
+        if (!fallRows) return;
+        var keys = Object.keys(fallRows);
+        if (!keys.length) return;
+        var stride = measureFallStridePx();
+        var dur = (FALL_ANIM_MS / 1000).toFixed(2) + 's';
+        var ease = 'cubic-bezier(0.33, 1, 0.68, 1)';
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () {
+            for (var i = 0; i < keys.length; i++) {
+              var parts = keys[i].split(',');
+              var r = +parts[0], c = +parts[1];
+              var el = cellEl(r, c);
+              if (!el) continue;
+              var n = fallRows[keys[i]];
+              if (!n || n <= 0) continue;
+              el.style.transition = 'none';
+              el.style.transform = 'translateY(' + (-n * stride) + 'px)';
+            }
+            requestAnimationFrame(function () {
+              for (var j = 0; j < keys.length; j++) {
+                var p2 = keys[j].split(',');
+                var r2 = +p2[0], c2 = +p2[1];
+                var el2 = cellEl(r2, c2);
+                if (!el2) continue;
+                var n2 = fallRows[keys[j]];
+                if (!n2 || n2 <= 0) continue;
+                el2.style.transition = 'transform ' + dur + ' ' + ease;
+                el2.style.transform = 'translateY(0)';
+              }
+              window.setTimeout(function () {
+                for (var k = 0; k < keys.length; k++) {
+                  var p3 = keys[k].split(',');
+                  var el3 = cellEl(+p3[0], +p3[1]);
+                  if (!el3) continue;
+                  el3.style.transition = '';
+                  el3.style.transform = '';
+                }
+              }, FALL_ANIM_MS + 24);
+            });
+          });
+        });
+      }
+
+      /** 通关后：盘面上现存宝石连锁爆裂消失，再进入结算与下一关 */
+      function playWinBoardExplodeThen(done) {
+        var cells = gridEl.querySelectorAll('.cell');
+        var maxDelayMs = 0;
+        var i, el, r, c, delayMs, twist;
+        for (i = 0; i < cells.length; i++) {
+          el = cells[i];
+          r = +el.dataset.r;
+          c = +el.dataset.c;
+          if (r !== r || c !== c || r < 0 || c < 0) continue;
+          if (grid[r][c] < 0) continue;
+          delayMs = (r + c) * 14 + (r * 7 + c * 11) % 34;
+          maxDelayMs = Math.max(maxDelayMs, delayMs);
+          twist = (Math.random() * 26 - 13).toFixed(1) + 'deg';
+          el.style.setProperty('--gemTwist', twist);
+          el.style.animationDelay = delayMs + 'ms';
+          el.classList.add('gem--winExplode');
+        }
+        gridEl.classList.add('grid--winBurst');
+        var totalWait = WIN_CELL_EXPLODE_MS + maxDelayMs + 80;
+        window.setTimeout(function () {
+          gridEl.classList.remove('grid--winBurst');
+          for (i = 0; i < cells.length; i++) {
+            el = cells[i];
+            el.classList.remove('gem--winExplode');
+            el.style.animationDelay = '';
+            el.style.removeProperty('--gemTwist');
+          }
+          if (typeof done === 'function') done();
+        }, totalWait);
+      }
+
+      /** 重力连锁（第2波及以后）：市面常见反馈 — 棋盘微震、高光闪、连击字、扩散光晕 */
+      function triggerCascadeFx(depth, nCleared) {
+        if (depth < 2 || !gridWrapEl || !cascadeFxLayerEl) return;
+        gridWrapEl.classList.remove('cascade-shake');
+        gridEl.classList.remove('cascade-flash');
+        void gridWrapEl.offsetWidth;
+        gridWrapEl.classList.add('cascade-shake');
+        gridEl.classList.add('cascade-flash');
+        setTimeout(function () {
+          gridWrapEl.classList.remove('cascade-shake');
+          gridEl.classList.remove('cascade-flash');
+        }, 420);
+
+        var spark = document.createElement('div');
+        spark.className = 'comboSpark';
+        cascadeFxLayerEl.appendChild(spark);
+        setTimeout(function () {
+          if (spark.parentNode) spark.parentNode.removeChild(spark);
+        }, 480);
+
+        var mainText = depth >= 6 ? '超级连锁！！' : depth >= 5 ? '华丽连锁！' : ('连锁 ×' + depth);
+        var subText = nCleared >= 12 ? '大范围消除！' : nCleared >= 8 ? '精彩！' : '';
+        var pop = document.createElement('div');
+        pop.className = 'comboPopup';
+        pop.innerHTML = '<span class="comboPopup-main">' + mainText + '</span>' +
+          (subText ? '<span class="comboPopup-sub">' + subText + '</span>' : '');
+        cascadeFxLayerEl.appendChild(pop);
+        setTimeout(function () {
+          if (pop.parentNode) pop.parentNode.removeChild(pop);
+        }, 620);
+      }
+
+      /** 按消除枚数 + 本次匹配段加成（直线扫描计分，同一格只统计一次） */
+      function scoreForClear(cells) {
+        var n = cells.length;
+        if (n === 0) return 0;
+        return n * 50 + n * n * 8;
+      }
+
+      function render(opts) {
+        opts = opts || {};
+        gridEl.innerHTML = '';
+        var sf = opts.swapFlash;
+        var fr = opts.fallRows;
+        for (var r = 0; r < ROWS; r++) {
+          for (var c = 0; c < COLS; c++) {
+            var d = document.createElement('div');
+            var col = grid[r][c];
+            d.className = 'cell c' + (col >= 0 ? col : 0);
+            if (col < 0) d.style.opacity = '0';
+            d.dataset.r = r;
+            d.dataset.c = c;
+            var fk = r + ',' + c;
+            if (fr && fr[fk]) d.classList.add('gem--fall');
+            if (sf && ((sf[0][0] === r && sf[0][1] === c) || (sf[1][0] === r && sf[1][1] === c))) {
+              d.classList.add('gem--swapFlash');
+            }
+            bindCell(d);
+            gridEl.appendChild(d);
+          }
+        }
+        document.getElementById('moves').textContent = moves;
+        document.getElementById('score').textContent = score;
+        document.getElementById('target').textContent = target;
+        document.getElementById('coins').textContent = state.coins;
+        refreshLevelHud();
+        if (fr && Object.keys(fr).length) runFallAnimations(fr);
+      }
+
+      function bindCell(el) {
+        el.addEventListener('pointerdown', onPointerDown);
+        el.addEventListener('pointerup', onPointerUp);
+        el.addEventListener('pointercancel', onPointerCancel);
+        el.addEventListener('lostpointercapture', onPointerLost);
+      }
+
+      /** 拖拽跟手 + 邻居反向位移；无效松手时弹性收回（成品三消常见反馈） */
+      function snapBackDragGem(el, hintCell, done) {
+        el.classList.remove('dragging');
+        if (hintCell) {
+          hintCell.classList.remove('dragHint');
+          hintCell.style.transition = 'transform 0.26s cubic-bezier(0.34, 1.45, 0.52, 1)';
+          hintCell.style.transform = 'translate(0,0)';
+        }
+        el.style.transition = 'transform 0.26s cubic-bezier(0.34, 1.45, 0.52, 1)';
+        el.style.transform = 'translate(0,0) scale(1)';
+        var ms = 270;
+        function fin() {
+          el.style.transition = '';
+          el.style.transform = '';
+          if (hintCell) {
+            hintCell.style.transition = '';
+            hintCell.style.transform = '';
+          }
+          if (typeof done === 'function') done();
+        }
+        setTimeout(fin, ms);
+      }
+
+      function detachDragGlobalListeners() {
+        if (!drag) return;
+        var cap = drag._dragCapOpts;
+        if (drag._globalMove && cap) {
+          document.removeEventListener('pointermove', drag._globalMove, cap);
+          drag._globalMove = null;
+        }
+        if (drag._globalEnd && cap) {
+          document.removeEventListener('pointerup', drag._globalEnd, cap);
+          document.removeEventListener('pointercancel', drag._globalEnd, cap);
+          document.removeEventListener('lostpointercapture', drag._lostCap, cap);
+          drag._globalEnd = null;
+          drag._lostCap = null;
+        }
+        drag._dragCapOpts = null;
+      }
+
+      /**
+       * document 捕获：移出格子仍能 move；顶行纵向拖时避免被 WebView/浏览器滚动抢走。
+       * lostpointercapture：部分机型边缘下拉会丢捕获，需收尾防止卡拖。
+       */
+      function attachDragGlobalListeners() {
+        if (!drag) return;
+        var pid = drag.id;
+        var cap = { capture: true, passive: false };
+        drag._dragCapOpts = cap;
+        function globalMove(ev) {
+          if (!drag || ev.pointerId !== pid) return;
+          ev.preventDefault();
+          onPointerMove(ev);
+        }
+        function globalEnd(ev) {
+          if (!drag || ev.pointerId !== pid) return;
+          detachDragGlobalListeners();
+          onPointerUp(ev);
+        }
+        function lostCap(ev) {
+          if (!drag || ev.pointerId !== pid) return;
+          detachDragGlobalListeners();
+          var el = drag.el;
+          var hintCell = drag.hintCell;
+          drag = null;
+          snapBackDragGem(el, hintCell);
+        }
+        drag._globalMove = globalMove;
+        drag._globalEnd = globalEnd;
+        drag._lostCap = lostCap;
+        document.addEventListener('pointermove', globalMove, cap);
+        document.addEventListener('pointerup', globalEnd, cap);
+        document.addEventListener('pointercancel', globalEnd, cap);
+        document.addEventListener('lostpointercapture', lostCap, cap);
+      }
+
+      /** 仅当横向位移明显大于纵向时才判左右滑，减少「顶行往下拖」被误判成横滑 */
+      function isHorizontalSwipe(dx, dy) {
+        var ax = Math.abs(dx), ay = Math.abs(dy);
+        return ax > ay + 14;
+      }
+
+      function onPointerDown(ev) {
+        if (locked || moves <= 0) return;
+        if (ev.button !== undefined && ev.button !== 0) return;
+        ev.preventDefault();
+        var el = ev.currentTarget;
+        el.setPointerCapture(ev.pointerId);
+        var br = el.getBoundingClientRect();
+        drag = {
+          id: ev.pointerId,
+          r: +el.dataset.r,
+          c: +el.dataset.c,
+          el: el,
+          x: ev.clientX,
+          y: ev.clientY,
+          active: false,
+          hintCell: null,
+          pullTx: 0,
+          pullTy: 0,
+          maxPull: Math.max(br.width, br.height) * 1.08 + 4
+        };
+        el.style.transition = 'none';
+        el.style.transform = 'translate(0,0) scale(1.06)';
+        el.classList.add('dragging');
+        attachDragGlobalListeners();
+      }
+
+      /** 仅当与该邻居交换能形成直线三连时，目标格才高亮并反向跟拖（成品三消常见提示逻辑） */
+      function setNeighborHint(tr, tc, tx, ty) {
+        if (!drag) return;
+        if (drag.hintCell) {
+          drag.hintCell.classList.remove('dragHint');
+          drag.hintCell.style.transition = 'none';
+          drag.hintCell.style.transform = '';
+        }
+        drag.hintCell = null;
+        if (tr < 0 || tr >= ROWS || tc < 0 || tc >= COLS) return;
+        if (!wouldClearAfterSwap(drag.r, drag.c, tr, tc)) return;
+        var hc = cellEl(tr, tc);
+        if (!hc || hc === drag.el) return;
+        drag.hintCell = hc;
+        hc.classList.add('dragHint');
+        hc.style.transition = 'none';
+        hc.style.transform = 'translate(' + (-tx * 0.88) + 'px,' + (-ty * 0.88) + 'px)';
+      }
+
+      function onPointerMove(ev) {
+        if (!drag || ev.pointerId !== drag.id) return;
+        var dx = ev.clientX - drag.x;
+        var dy = ev.clientY - drag.y;
+        var dist = Math.sqrt(dx * dx + dy * dy);
+        if (!drag.active && dist > 8) drag.active = true;
+        if (!drag.active) return;
+        var ax = Math.abs(dx), ay = Math.abs(dy);
+        var tx = 0, ty = 0;
+        var br, tr, tc;
+        var mp = drag.maxPull;
+        if (ax < 5 && ay < 5) {
+          drag.el.style.transition = 'none';
+          drag.el.style.transform = 'translate(0,0) scale(1.06)';
+          drag.pullTx = 0;
+          drag.pullTy = 0;
+          setNeighborHint(-1, -1, 0, 0);
+          return;
+        }
+        var horiz = isHorizontalSwipe(dx, dy);
+        if (horiz) {
+          br = dx > 0 ? [0, 1] : [0, -1];
+          tr = drag.r + br[0];
+          tc = drag.c + br[1];
+          var hx = Math.min(mp, Math.max(-mp, dx));
+          if (tc < 0 || tc >= COLS) hx = dx * 0.2;
+          tx = hx;
+          ty = 0;
+        } else {
+          br = dy > 0 ? [1, 0] : [-1, 0];
+          tr = drag.r + br[0];
+          tc = drag.c + br[1];
+          var vy = Math.min(mp, Math.max(-mp, dy));
+          if (tr < 0 || tr >= ROWS) vy = dy * 0.2;
+          tx = 0;
+          ty = vy;
+        }
+        drag.pullTx = tx;
+        drag.pullTy = ty;
+        drag.el.style.transition = 'none';
+        drag.el.style.transform = 'translate(' + tx + 'px,' + ty + 'px) scale(1.06)';
+        setNeighborHint(tr, tc, tx, ty);
+      }
+
+      function pickCellAt(clientX, clientY) {
+        var prev = drag && drag.el ? drag.el.style.pointerEvents : '';
+        if (drag && drag.el) drag.el.style.pointerEvents = 'none';
+        var hit = document.elementFromPoint(clientX, clientY);
+        if (drag && drag.el) drag.el.style.pointerEvents = prev || '';
+        while (hit && !hit.classList.contains('cell')) hit = hit.parentElement;
+        return hit;
+      }
+
+      function onPointerUp(ev) {
+        if (!drag || ev.pointerId !== drag.id) return;
+        ev.preventDefault();
+        detachDragGlobalListeners();
+        var el = drag.el;
+        var hintCell = drag.hintCell;
+        /** 勿在此处 releasePointerCapture：会同步触发 lostpointercapture，onPointerLost 会清空 drag 并打断 trySwap；pointerup 结束时会自动释放捕获 */
+        var tr, tc;
+        if (drag.active) {
+          var dx = ev.clientX - drag.x;
+          var dy = ev.clientY - drag.y;
+          if (Math.abs(dx) + Math.abs(dy) < 16) {
+            snapBackDragGem(el, hintCell);
+            drag = null;
+            return;
+          }
+          var horizUp = isHorizontalSwipe(dx, dy);
+          var br = horizUp ? (dx > 0 ? [0, 1] : [0, -1]) : (dy > 0 ? [1, 0] : [-1, 0]);
+          tr = drag.r + br[0];
+          tc = drag.c + br[1];
+        } else {
+          var targetEl = pickCellAt(ev.clientX, ev.clientY);
+          if (!targetEl || targetEl === el) {
+            el.classList.remove('dragging');
+            el.style.transition = '';
+            el.style.transform = '';
+            drag = null;
+            return;
+          }
+          tr = +targetEl.dataset.r;
+          tc = +targetEl.dataset.c;
+        }
+        var r0 = drag.r, c0 = drag.c;
+        drag = null;
+        if (tr < 0 || tr >= ROWS || tc < 0 || tc >= COLS) {
+          snapBackDragGem(el, hintCell);
+          return;
+        }
+        var ad = Math.abs(tr - r0) + Math.abs(tc - c0);
+        if (ad !== 1) {
+          snapBackDragGem(el, hintCell);
+          return;
+        }
+        if (hintCell) {
+          hintCell.classList.remove('dragHint');
+          hintCell.style.transition = '';
+          hintCell.style.transform = '';
+        }
+        el.classList.remove('dragging');
+        el.style.transition = '';
+        el.style.transform = '';
+        trySwap(r0, c0, tr, tc);
+      }
+
+      function onPointerCancel(ev) {
+        if (!drag || ev.pointerId !== drag.id) return;
+        detachDragGlobalListeners();
+        var el = drag.el;
+        var hintCell = drag.hintCell;
+        drag = null;
+        snapBackDragGem(el, hintCell);
+      }
+
+      function onPointerLost(ev) {
+        if (!drag || ev.pointerId !== drag.id) return;
+        detachDragGlobalListeners();
+        var el = drag.el;
+        var hintCell = drag.hintCell;
+        drag = null;
+        snapBackDragGem(el, hintCell);
+      }
+
+      function trySwap(r1, c1, r2, c2) {
+        if (locked || moves <= 0) return;
+        var ok = wouldClearAfterSwap(r1, c1, r2, c2);
+        /** 无效交换：不进网格 */
+        if (!ok) {
+          locked = false;
+          return;
+        }
+        locked = true;
+        moves--;
+        document.getElementById('moves').textContent = moves;
+        /** 有效交换：直接互换并重绘；swapFlash 给出短暂「已换位」高光（非位移动画） */
+        swapInGrid(r1, c1, r2, c2);
+        render({ swapFlash: [[r1, c1], [r2, c2]] });
+        cascadeDepth = 0;
+        resolveBoard();
+      }
+
+      function resolveBoard() {
+        if (cascadeDepth >= MAX_CASCADE) {
+          cascadeDepth = 0;
+          locked = false;
+          afterRoundCheck();
+          return;
+        }
+        var toClear = findMatchedCells();
+        if (toClear.length === 0) {
+          cascadeDepth = 0;
+          locked = false;
+          afterRoundCheck();
+          return;
+        }
+        cascadeDepth++;
+        triggerCascadeFx(cascadeDepth, toClear.length);
+        var pts = scoreForClear(toClear);
+        addScore(pts);
+        document.getElementById('score').textContent = score;
+        for (var i = 0; i < toClear.length; i++) {
+          var el = cellEl(toClear[i][0], toClear[i][1]);
+          if (el) el.classList.add('gem--clear');
+        }
+        setTimeout(function () {
+          for (var j = 0; j < toClear.length; j++) {
+            grid[toClear[j][0]][toClear[j][1]] = -1;
+          }
+          var fg = applyGravityFallMask();
+          render({ fallRows: fg.fallRows });
+          setTimeout(function () {
+            resolveBoard();
+          }, FALL_ANIM_MS);
+        }, CLEAR_MS);
+      }
+
+      function afterRoundCheck() {
+        if (score >= target) {
+          var lvWin = state.currentLevel;
+          var minMs = minRoundMsForLevel(lvWin);
+          var elapsed = perfNow() - roundStartedAt;
+          var waitWin = Math.max(0, minMs - elapsed);
+          function finishLevelWin() {
+            locked = true;
+            playWinBoardExplodeThen(function () {
+              settleCoinsFromWin();
+              var lv = lvWin;
+              var earned = starsEarned(score, target);
+              var sk = String(lv);
+              if (!state.levelStars[sk] || earned > state.levelStars[sk]) state.levelStars[sk] = earned;
+              var advanced = false;
+              if (lv < LEVEL_COUNT) {
+                if (state.maxUnlocked <= lv) state.maxUnlocked = lv + 1;
+                state.currentLevel = lv + 1;
+                advanced = true;
+              } else {
+                state.maxUnlocked = LEVEL_COUNT;
+              }
+              save();
+              var sl = starLabel(earned);
+              if (advanced) {
+                alert('第 ' + lv + ' 关通关！\n评价 ' + sl + '\n金币已入账。进入第 ' + state.currentLevel + ' 关。');
+              } else {
+                alert('第 ' + lv + ' 关通关！\n评价 ' + sl + '\n已全部通关，可从「选关」重玩任意关卡。');
+              }
+              locked = false;
+              newRound(false);
+            });
+          }
+          if (waitWin > 0) {
+            locked = true;
+            setTimeout(finishLevelWin, waitWin);
+          } else {
+            finishLevelWin();
+          }
+          return;
+        }
+        if (moves <= 0) {
+          settleCoinsFromWin();
+          save();
+          alert('步数用尽（第 ' + state.currentLevel + ' 关）。金币已按得分入账，再试一次！');
+          newRound(false);
+        }
+      }
+
+      function addScore(n) {
+        score += n;
+        if (score > state.best) state.best = score;
+      }
+
+      function settleCoinsFromWin() {
+        var base = Math.floor(score / 10) + (score >= target ? 50 : 0);
+        var mul = doubleCoinRun ? 2 : 1;
+        state.coins += base * mul;
+        save();
+      }
+
+      function newRound(resetDouble) {
+        var def = getLevelDef(state.currentLevel);
+        moves = def.moves;
+        score = 0;
+        target = def.target;
+        activeColors = Math.max(4, Math.min(6, def.colors));
+        roundStartedAt = perfNow();
+        if (resetDouble) doubleCoinRun = false;
+        locked = false;
+        fillGrid();
+        document.getElementById('multPill').style.display = doubleCoinRun ? 'inline-block' : 'none';
+        if (cascadeFxLayerEl) cascadeFxLayerEl.innerHTML = '';
+        render();
+      }
+
+      function openLevelModal() {
+        var modal = document.getElementById('levelModal');
+        var gridElModal = document.getElementById('levelGrid');
+        if (!modal || !gridElModal) return;
+        gridElModal.innerHTML = '';
+        for (var L = 1; L <= LEVEL_COUNT; L++) {
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'lvBtn';
+          btn.dataset.lv = String(L);
+          var st = state.levelStars[String(L)] || 0;
+          btn.innerHTML = L + '<small>' + (st ? starLabel(st) : (L <= state.maxUnlocked ? '\u00a0' : '\ud83d\udd12')) + '</small>';
+          if (L > state.maxUnlocked) btn.classList.add('lv-locked');
+          if (L === state.currentLevel) btn.classList.add('lv-current');
+          btn.addEventListener('click', function (ev) {
+            var t = ev.currentTarget;
+            var n = parseInt(t.dataset.lv, 10);
+            if (n > state.maxUnlocked) return;
+            state.currentLevel = n;
+            save();
+            modal.hidden = true;
+            modal.setAttribute('aria-hidden', 'true');
+            doubleCoinRun = false;
+            newRound(true);
+          });
+          gridElModal.appendChild(btn);
+        }
+        modal.hidden = false;
+        modal.setAttribute('aria-hidden', 'false');
+      }
+
+      function closeLevelModal() {
+        var modal = document.getElementById('levelModal');
+        if (!modal) return;
+        modal.hidden = true;
+        modal.setAttribute('aria-hidden', 'true');
+      }
+
+      document.getElementById('btnNew').addEventListener('click', function () {
+        doubleCoinRun = false;
+        newRound(true);
+      });
+      document.getElementById('btnLevels').addEventListener('click', openLevelModal);
+      document.getElementById('levelModalClose').addEventListener('click', closeLevelModal);
+      document.getElementById('levelModalBackdrop').addEventListener('click', closeLevelModal);
+      var levelPillEl = document.getElementById('levelPill');
+      if (levelPillEl) {
+        levelPillEl.addEventListener('click', openLevelModal);
+        levelPillEl.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            openLevelModal();
+          }
+        });
+      }
+
+      var adEl = document.getElementById('adStatus');
+      var pendingReward = null;
+      var adBusy = false;
+      function onRewardClose(d) {
+        adBusy = false;
+        document.getElementById('btnAdMoves').disabled = false;
+        document.getElementById('btnAdDouble').disabled = false;
+        if (!pendingReward) return;
+        var kind = pendingReward;
+        pendingReward = null;
+        var ok = d && d.success;
+        if (kind === 'moves') {
+          CrystaBoxH5Ad.setStatus(adEl, ok ? '已发放 +5 步' : '激励未达成', ok ? 'ok' : 'err');
+          if (ok) {
+            moves += 5;
+            document.getElementById('moves').textContent = moves;
+          }
+        } else if (kind === 'double') {
+          if (ok) {
+            doubleCoinRun = true;
+            document.getElementById('multPill').style.display = 'inline-block';
+            CrystaBoxH5Ad.setStatus(adEl, '已激活本局金币×2', 'ok');
+          } else {
+            CrystaBoxH5Ad.setStatus(adEl, '激励未达成，倍率未激活', 'err');
+          }
+        }
+      }
+      window.addEventListener('CrystaBoxNativeAd', function (ev) {
+        if (ev && ev.detail) onRewardClose(ev.detail);
+      });
+      window.onCrystaBoxNativeAd = function (d) {
+        if (d) onRewardClose(d);
+      };
+
+      function requestAd(kind, placementPrefix) {
+        if (adBusy) return;
+        if (!CrystaBoxH5Ad.showRewarded({ placement: 'g001', requestIdPrefix: placementPrefix || 'g001' })) {
+          CrystaBoxH5Ad.setStatus(adEl, '无法调用广告桥（请在 App 内 WebView 打开）。', 'err');
+          return;
+        }
+        pendingReward = kind;
+        adBusy = true;
+        document.getElementById('btnAdMoves').disabled = true;
+        document.getElementById('btnAdDouble').disabled = true;
+        CrystaBoxH5Ad.setStatus(adEl, '已向宿主请求激励广告…', 'muted');
+        setTimeout(function () {
+          adBusy = false;
+          document.getElementById('btnAdMoves').disabled = false;
+          document.getElementById('btnAdDouble').disabled = false;
+        }, 120000);
+      }
+
+      document.getElementById('btnAdMoves').addEventListener('click', function () {
+        requestAd('moves', 'g001-moves');
+      });
+      document.getElementById('btnAdDouble').addEventListener('click', function () {
+        requestAd('double', 'g001-double');
+      });
+
+      newRound(true);
+    })();
+  </script>
+</body>
+</html>

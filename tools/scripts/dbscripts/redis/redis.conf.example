@@ -1,0 +1,18 @@
+# StarCrystal Redis 示例配置（复制为 redis.conf 后按需修改）
+# 本文件请使用 UTF-8 保存（无 BOM 即可）。
+#
+# dbscripts 默认：
+#   数据目录  redis/data
+#   备份目录  redis/data_backup（可用 REDIS_BACKUP_DIR 覆盖）
+#
+# 本地开发可使用相对路径 dir ./data
+port 6379
+bind 127.0.0.1
+protected-mode yes
+dir ./data
+dbfilename dump.rdb
+appendonly no
+save 900 1
+save 300 10
+save 60 10000
+loglevel notice

@@ -1,0 +1,4346 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>最强大脑6 · 箭头突围</title>
+  <style>
+    html { height: 100%; touch-action: manipulation; }
+    /** 页面背景：水泥路面 — 冷灰基调 + 细密纹理 + 轻微磨损明暗 */
+    html, body {
+      margin: 0;
+      padding: 0;
+      color: #1a2428;
+      font-family: system-ui, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background-color: #6f7378;
+      background-image:
+        radial-gradient(ellipse 140% 55% at 50% -5%, rgba(255, 255, 255, 0.11), transparent 52%),
+        radial-gradient(ellipse 70% 45% at 92% 88%, rgba(0, 0, 0, 0.14), transparent 48%),
+        radial-gradient(ellipse 50% 35% at 8% 75%, rgba(0, 0, 0, 0.07), transparent 45%),
+        repeating-linear-gradient(
+          0deg,
+          rgba(255, 255, 255, 0.028),
+          rgba(255, 255, 255, 0.028) 1px,
+          transparent 1px,
+          transparent 4px
+        ),
+        repeating-linear-gradient(
+          90deg,
+          rgba(0, 0, 0, 0.022),
+          rgba(0, 0, 0, 0.022) 1px,
+          transparent 1px,
+          transparent 5px
+        ),
+        linear-gradient(172deg, #8e9399 0%, #787d83 32%, #696e74 68%, #5f646a 100%);
+      background-attachment: fixed;
+    }
+    body {
+      min-height: 100%;
+      padding: max(10px, env(safe-area-inset-top)) 10px max(14px, env(safe-area-inset-bottom));
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .header {
+      width: min(96vw, 420px);
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+    }
+    button.gear {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: linear-gradient(145deg, #a855f7, #7c3aed);
+      border: 2px solid rgba(255,255,255,.35);
+      box-shadow: 0 2px 8px rgba(0,0,0,.2);
+      display: grid; place-items: center;
+      font-size: 18px;
+      cursor: pointer;
+      padding: 0;
+      margin: 0;
+      font-family: inherit;
+      color: inherit;
+      line-height: 1;
+      -webkit-tap-highlight-color: transparent;
+    }
+    button.gear:active { filter: brightness(1.06); transform: scale(0.96); }
+    .banner {
+      text-align: center;
+      background: linear-gradient(180deg, #ffe066 0%, #fcc419 100%);
+      border-radius: 10px;
+      padding: 6px 12px;
+      border: 2px solid #fab005;
+      box-shadow: 0 3px 0 #e67700;
+      font-weight: 800;
+      font-size: 15px;
+      color: #5c3d00;
+    }
+    .coins {
+      display: flex; align-items: center; gap: 4px;
+      background: rgba(255,255,255,.65);
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-weight: 700;
+      border: 1px solid rgba(0,0,0,.08);
+    }
+    .coins span { color: #c92a2a; }
+    .progressWrap {
+      width: min(96vw, 420px);
+      height: 10px;
+      background: rgba(255,255,255,.5);
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid rgba(0,0,0,.1);
+    }
+    .progressFill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #51cf66, #2f9e44);
+      border-radius: 999px;
+      transition: width .175s ease;
+    }
+    .targetWrap {
+      width: min(92vw, 380px);
+      aspect-ratio: 1;
+      background: rgba(255,255,255,.35);
+      border-radius: 14px;
+      padding: 8px;
+      box-sizing: border-box;
+      border: 3px solid rgba(255,255,255,.7);
+      box-shadow: inset 0 2px 12px rgba(0,0,0,.08), 0 4px 14px rgba(0,0,0,.12);
+    }
+    .targetGrid {
+      width: 100%; height: 100%;
+      display: grid;
+      gap: 1px;
+      border-radius: 8px;
+      overflow: hidden;
+      touch-action: none;
+    }
+    .tgCell {
+      position: relative;
+      border-radius: 2px;
+      box-shadow: inset 0 -1px rgba(0,0,0,.12);
+    }
+    .tgCell.empty { opacity: .12; background: #fff !important; }
+    .tgCell.tgGravityMoving {
+      position: relative;
+      z-index: 4;
+      pointer-events: none;
+    }
+    .middleZone {
+      width: min(96vw, 420px);
+      /** 与上方 targetWrap：body 列 gap 8px + 本 margin；总间距较「8+31」再 +20% → margin-top 39px */
+      margin-top: 39px;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .middleParkRow {
+      display: flex;
+      flex-direction: row;
+      align-items: stretch;
+      gap: 8px;
+      width: 100%;
+    }
+    .parkGrid {
+      display: grid;
+      grid-template-columns: repeat(8, minmax(0, 1fr));
+      grid-auto-rows: auto;
+      gap: 4px;
+      padding: 8px 8px 8px 8px;
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: 12px;
+      border: 2px dashed rgba(0, 0, 0, 0.12);
+      box-sizing: border-box;
+      box-shadow: inset 0 1px 8px rgba(0, 0, 0, 0.06);
+      flex: 1;
+      min-width: 0;
+    }
+    .quotaAside {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: center;
+      gap: 0;
+      flex-shrink: 0;
+      width: 52px;
+      align-self: stretch;
+    }
+    .parkBay {
+      aspect-ratio: 1;
+      min-height: 0;
+      width: 100%;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.4);
+      border: 2px solid rgba(0, 0, 0, 0.1);
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.07);
+      transition: box-shadow 0.1s ease, border-color 0.1s ease;
+    }
+    .parkBay.destGlow {
+      border-color: #2f9e44;
+      box-shadow: inset 0 0 0 2px rgba(47, 158, 68, 0.55), 0 0 14px rgba(81, 207, 102, 0.35);
+    }
+    /** 未解锁停车位（占位）：尺寸与 8 格布局下单格一致，不可入库 */
+    .parkBay.parkBay-locked {
+      opacity: 0.4;
+      pointer-events: none;
+      background: repeating-linear-gradient(
+        -12deg,
+        rgba(255, 255, 255, 0.22),
+        rgba(255, 255, 255, 0.22) 6px,
+        rgba(0, 0, 0, 0.04) 6px,
+        rgba(0, 0, 0, 0.04) 12px
+      );
+      border-style: dashed;
+    }
+    .parkBay-occupied {
+      padding: 2px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: flex-start;
+      gap: 0;
+      min-height: 0;
+      /** 去掉默认槽位的内阴影，避免与半透明底色叠加出白条；裁剪子像素接缝 */
+      box-shadow: none;
+      overflow: hidden;
+      isolation: isolate;
+    }
+    /** 单层渐变底（不再叠白色底层，杜绝接缝露白）；约 70% 不透明 */
+    .parkBay.parkBay-occupied.c0 {
+      background: linear-gradient(165deg, rgba(255, 107, 107, 0.72), rgba(201, 42, 42, 0.68));
+    }
+    .parkBay.parkBay-occupied.c1 {
+      background: linear-gradient(165deg, rgba(105, 219, 124, 0.72), rgba(47, 158, 68, 0.68));
+    }
+    .parkBay.parkBay-occupied.c2 {
+      background: linear-gradient(165deg, rgba(116, 192, 252, 0.72), rgba(25, 113, 194, 0.68));
+    }
+    .parkBay.parkBay-occupied.c3 {
+      background: linear-gradient(165deg, rgba(255, 212, 59, 0.74), rgba(240, 140, 0, 0.68));
+    }
+    .parkBay.parkBay-occupied.c4 {
+      background: linear-gradient(165deg, rgba(218, 119, 242, 0.72), rgba(156, 54, 181, 0.66));
+    }
+    .parkBay.parkBay-occupied.c5 {
+      background: linear-gradient(165deg, rgba(94, 234, 212, 0.72), rgba(13, 148, 136, 0.68));
+    }
+    /** 卡通炮塔：内联 SVG + 炮管绕底座旋转瞄准（动画由 transition + 轻微 idle） */
+    .parkTurretWrap {
+      position: relative;
+      flex: 0 0 auto;
+      width: 84%;
+      max-height: 46%;
+      margin: 0 auto;
+      align-self: center;
+      pointer-events: none;
+      animation: parkTurretIdle 2.5s ease-in-out infinite;
+    }
+    @keyframes parkTurretIdle {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-1.5px); }
+    }
+    .parkTurretMount {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      min-height: 36px;
+    }
+    .parkTurretBarrelPivot {
+      position: absolute;
+      left: 50%;
+      bottom: 12px;
+      width: 72%;
+      height: 80%;
+      margin-left: -36%;
+      transform: rotate(0deg);
+      transform-origin: 50% 100%;
+      transition: transform var(--park-turret-aim, 200ms) cubic-bezier(0.34, 0.72, 0.24, 1);
+      pointer-events: none;
+      will-change: transform;
+    }
+    .parkTurretBarrelSvg {
+      display: block;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+    .parkTurretMuzzle {
+      position: absolute;
+      left: 50%;
+      top: 7%;
+      width: 3px;
+      height: 3px;
+      margin: 0;
+      transform: translate(-50%, -50%);
+      opacity: 0;
+      pointer-events: none;
+    }
+    .parkTurretWheels {
+      position: absolute;
+      left: 50%;
+      bottom: 0;
+      width: 90%;
+      height: 13px;
+      margin-left: -45%;
+      pointer-events: none;
+    }
+    .parkTurretWheels svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+    /** 炮管填色由 JS buildParkBarrelSvg 按车位颜色写入 */
+    .parkChip {
+      width: 100%;
+      flex: 1;
+      min-height: 0;
+      border-radius: 8px;
+      border: 2px solid rgba(0, 0, 0, 0.12);
+      box-shadow: inset 0 -2px rgba(0, 0, 0, 0.1);
+      cursor: default;
+      animation: none;
+      transition: none;
+    }
+    /** 占领区内色块：略加深于槽底；去掉边框/内阴影避免顶部「白线」 */
+    .parkBay-occupied .parkChip {
+      border: none !important;
+      box-shadow: none !important;
+      border-radius: 6px;
+    }
+    .parkBay-occupied .parkChip.c0 {
+      background: linear-gradient(145deg, rgba(255, 107, 107, 0.82), rgba(201, 42, 42, 0.74)) !important;
+    }
+    .parkBay-occupied .parkChip.c1 {
+      background: linear-gradient(145deg, rgba(105, 219, 124, 0.82), rgba(47, 158, 68, 0.74)) !important;
+    }
+    .parkBay-occupied .parkChip.c2 {
+      background: linear-gradient(145deg, rgba(116, 192, 252, 0.82), rgba(25, 113, 194, 0.74)) !important;
+    }
+    .parkBay-occupied .parkChip.c3 {
+      background: linear-gradient(145deg, rgba(255, 212, 59, 0.84), rgba(240, 140, 0, 0.74)) !important;
+    }
+    .parkBay-occupied .parkChip.c4 {
+      background: linear-gradient(145deg, rgba(218, 119, 242, 0.8), rgba(156, 54, 181, 0.72)) !important;
+    }
+    .parkBay-occupied .parkChip.c5 {
+      background: linear-gradient(145deg, rgba(94, 234, 212, 0.82), rgba(13, 148, 136, 0.74)) !important;
+    }
+    /** 剩余次数在色块下方（车位槽底部） */
+    .parkRemainFoot {
+      flex: 0 0 auto;
+      text-align: center;
+      padding: 3px 2px 1px;
+      font-weight: 900;
+      font-size: clamp(10px, 2.8vw, 13px);
+      color: #1e293b;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      text-shadow: none;
+      animation: none;
+      transition: none;
+    }
+    .parkBay.parkBay-waitTap {
+      animation: parkPulse 0.55s ease-in-out infinite;
+    }
+    @keyframes parkPulse {
+      0%, 100% { filter: brightness(1); }
+      50% { filter: brightness(1.12); }
+    }
+    .parkGrid.parkGrid-activeTap {
+      cursor: pointer;
+      outline: 2px dashed rgba(47, 158, 68, 0.55);
+      outline-offset: 2px;
+      border-radius: 12px;
+    }
+    .arrowBlock .elimBadge {
+      position: absolute;
+      right: 3px;
+      bottom: 2px;
+      min-width: 1.1em;
+      padding: 1px 5px;
+      border-radius: 6px;
+      background: rgba(0, 0, 0, 0.38);
+      font-size: 10px;
+      font-weight: 900;
+      color: #fff;
+      line-height: 1.2;
+      pointer-events: none;
+    }
+    /**
+     * 子弹主体仍是 bullet.svg；不跟车位色块变色。
+     * 飞行中加中性高光/拖影与略大尺寸，否则细条 + 极短时长远看不清轨迹。
+     */
+    .bulletFxShell {
+      position: fixed;
+      width: min(30px, 7.5vw);
+      height: auto;
+      margin: 0;
+      z-index: 455;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      overflow: visible;
+      will-change: left, top;
+    }
+    .bulletFxShell.bulletFlying {
+      width: min(42px, 10.5vw);
+    }
+    .bulletFxShell img {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-height: 6px;
+      position: relative;
+      z-index: 0;
+      filter: none;
+    }
+    .bulletFxShell.bulletFlying img {
+      max-height: 11px;
+      animation: bulletFlightGlowPulse 0.14s ease-in-out infinite alternate;
+      will-change: filter;
+    }
+    @keyframes bulletFlightGlowPulse {
+      0% {
+        filter: saturate(1.06) brightness(1.06)
+          drop-shadow(0 0 1px rgba(255, 255, 255, 0.65))
+          drop-shadow(0 0 5px rgba(255, 248, 220, 0.55))
+          drop-shadow(0 0 12px rgba(255, 235, 180, 0.28));
+      }
+      100% {
+        filter: saturate(1.14) brightness(1.22)
+          drop-shadow(0 0 2px rgba(255, 255, 255, 0.85))
+          drop-shadow(0 0 8px rgba(255, 252, 235, 0.72))
+          drop-shadow(0 0 18px rgba(255, 228, 160, 0.38));
+      }
+    }
+    /** 中性扫光，便于感知位移（非车位语义色） */
+    .bulletFxShell.bulletFlying::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      width: 32%;
+      height: 220%;
+      margin-top: -60%;
+      margin-left: -4%;
+      z-index: 1;
+      pointer-events: none;
+      border-radius: 45%;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.06) 42%,
+        rgba(255, 255, 255, 0.55) 50%,
+        rgba(255, 255, 255, 0.08) 58%,
+        transparent 100%
+      );
+      mix-blend-mode: soft-light;
+      opacity: 0.45;
+      animation: bulletFlightShineSweep 0.38s linear infinite;
+      will-change: transform;
+    }
+    @keyframes bulletFlightShineSweep {
+      0% { transform: translateX(-130%); }
+      100% { transform: translateX(320%); }
+    }
+    .targetWrap.targetToolMode {
+      outline: 3px dashed rgba(151, 117, 250, 0.65);
+      outline-offset: 4px;
+      border-radius: 12px;
+    }
+    /**
+     * 目标被击中：漫画爆炸图 assets/hit-explosion.svg（挂 body + fixed，不被 targetGrid overflow 裁切）
+     * 来源：Wikimedia Commons「Explosion-153710 icon.svg」— OpenClipartVectors，CC0。
+     * 显示范围约 1.5 个格子边长：尺寸由 JS 按格子 rect×1.5 写入。
+     */
+    .hitExplosionFx {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 1px;
+      height: 1px;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      pointer-events: none;
+      z-index: 458;
+      overflow: visible;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .hitExplosionFx img.hitExplosionArt {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      transform: scale(0.18);
+      opacity: 1;
+      animation: hitExplosionSvgPop 0.38s cubic-bezier(0.22, 0.82, 0.35, 1) forwards;
+      will-change: transform, opacity, filter;
+      filter: saturate(1.18) brightness(1.35)
+        drop-shadow(0 0 3px rgba(255, 255, 255, 0.55));
+    }
+    @keyframes hitExplosionSvgPop {
+      0% {
+        transform: scale(0.12);
+        opacity: 1;
+        filter: saturate(1.18) brightness(1.42)
+          drop-shadow(0 0 4px rgba(255, 255, 255, 0.65));
+      }
+      42% {
+        transform: scale(1.02);
+        opacity: 1;
+        filter: saturate(1.12) brightness(1.08)
+          drop-shadow(0 0 6px rgba(255, 248, 220, 0.45));
+      }
+      100% {
+        transform: scale(1.12);
+        opacity: 0;
+        filter: saturate(1) brightness(1)
+          drop-shadow(0 0 2px rgba(255, 255, 255, 0));
+      }
+    }
+    /** 被锁定待攻击：边框闪烁 + 轻微脉冲（目标格；占领区每 bay 至多出一发） */
+    .tgCell.tgAttackTarget {
+      animation: tgAttackPulse 0.36s ease-in-out infinite;
+      position: relative;
+      z-index: 7;
+      pointer-events: none;
+      box-shadow:
+        inset 0 0 0 2px rgba(255, 255, 255, 0.88),
+        inset 0 0 10px rgba(255, 240, 160, 0.45),
+        0 0 14px rgba(255, 200, 80, 0.5);
+    }
+    @keyframes tgAttackPulse {
+      0%, 100% { filter: brightness(1); transform: scale(1); }
+      50% { filter: brightness(1.18); transform: scale(1.07); }
+    }
+    /** 爆炸瞬间隐藏彩色块，仅保留 body 上的漫画爆炸图 */
+    .tgCell.tgEliminating {
+      animation: none;
+      position: relative;
+      z-index: 8;
+      pointer-events: none;
+      background: transparent !important;
+      box-shadow: none !important;
+      opacity: 0;
+    }
+    .quotaRow {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: center;
+      gap: 0;
+      min-height: 0;
+    }
+    .slotAd {
+      flex-shrink: 0;
+      width: 100%;
+      height: 40px;
+      padding: 0 6px;
+      border-radius: 10px;
+      border: 0;
+      background: linear-gradient(180deg, #51cf66, #2f9e44);
+      color: #fff;
+      font-weight: 800;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,.2);
+    }
+    .slotAd:disabled { opacity: .5; cursor: not-allowed; }
+    .playShell {
+      width: min(96vw, 420px);
+      flex: 1;
+      min-height: 200px;
+      background: rgba(255,255,255,.5);
+      border-radius: 18px;
+      padding: 8px;
+      box-sizing: border-box;
+      border: 3px solid rgba(255,255,255,.75);
+      box-shadow: 0 6px 20px rgba(0,0,0,.12);
+    }
+    .playfield {
+      position: relative;
+      width: 100%;
+      margin: 0 auto;
+      border-radius: 14px;
+      background: #757575;
+      box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.18);
+      overflow: hidden;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .pfUnderlay {
+      position: absolute;
+      pointer-events: none;
+      box-sizing: border-box;
+    }
+    /** 整块网格区（含逻辑上的外圈道路格）：绿色；外线灰道叠在上面 */
+    .pfUnderlay.pfPark {
+      z-index: 0;
+      background: linear-gradient(165deg, #aed581 0%, #8bc34a 42%, #7cb342 100%);
+      box-shadow: inset 0 0 0 1px rgba(46, 125, 50, 0.35);
+    }
+    /** 贴着 playfield 四外边 lane 宽的环形车道（与 playfieldMetrics 外边距一致） */
+    .pfUnderlay.pfRoad {
+      z-index: 1;
+      background: linear-gradient(180deg, #bdbdbd 0%, #9e9e9e 52%, #8d8d8d 100%);
+      box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.14);
+    }
+    .arrowBlock {
+      position: absolute;
+      border-radius: 14px;
+      box-sizing: border-box;
+      border: 2px solid rgba(255,255,255,.62);
+      box-shadow: inset 0 -5px rgba(0,0,0,.22), inset 0 2px rgba(255,255,255,.22), 0 4px 12px rgba(0,0,0,.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 2;
+      transition: transform .04s ease, filter .04s;
+    }
+    .arrowBlock:active { filter: brightness(1.08); transform: scale(0.98); }
+    .arrowBlock.sliding { pointer-events: none; transition: transform .11s cubic-bezier(0.25, 0.8, 0.25, 1); }
+    .arrowBlock.elimPulse { animation: elimPulse .225s ease forwards; }
+    .arrowBlock.parkingMove {
+      z-index: 50;
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.28);
+    }
+    @keyframes parkFailShake {
+      0%, 100% { transform: translate(0, 0); }
+      30% { transform: translate(-5px, 0); }
+      60% { transform: translate(5px, 0); }
+    }
+    .arrowBlock.parkFail { animation: parkFailShake 0.16s ease; }
+    .arrowBlock.bumpHit {
+      transition: transform 0.045s ease-out;
+    }
+    @keyframes collisionSparkBurst {
+      0% { transform: translate(-50%, -50%) scale(0.25); opacity: 1; filter: brightness(1.4); }
+      55% { opacity: 1; }
+      100% { transform: translate(-50%, -50%) scale(2.1); opacity: 0; filter: brightness(1); }
+    }
+    .collisionSpark {
+      position: fixed;
+      width: 56px;
+      height: 56px;
+      margin: 0;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 430;
+      background: radial-gradient(circle, rgba(255, 255, 245, 0.95) 0%, rgba(255, 210, 90, 0.55) 38%, rgba(255, 140, 60, 0.2) 62%, transparent 72%);
+      box-shadow: 0 0 24px rgba(255, 230, 120, 0.85);
+      animation: collisionSparkBurst 0.19s ease-out forwards;
+    }
+    @keyframes elimPulse {
+      0% { transform: scale(1); opacity: 1; }
+      40% { transform: scale(1.08); opacity: .85; }
+      100% { transform: scale(0); opacity: 0; }
+    }
+    .arrowGlyph {
+      font-size: clamp(16px, 5vw, 22px);
+      font-weight: 900;
+      color: rgba(255,255,255,.95);
+      text-shadow: 0 2px 4px rgba(0,0,0,.35);
+      line-height: 1;
+      pointer-events: none;
+      transition: transform 0.06s ease-out;
+    }
+    .c0 { background: linear-gradient(145deg, #ff6b6b, #c92a2a); }
+    .c1 { background: linear-gradient(145deg, #69db7c, #2f9e44); }
+    .c2 { background: linear-gradient(145deg, #74c0fc, #1971c2); }
+    .c3 { background: linear-gradient(145deg, #ffd43b, #f08c00); }
+    .c4 { background: linear-gradient(145deg, #da77f2, #9c36b5); }
+    .c5 { background: linear-gradient(145deg, #5eead4, #0d9488); }
+    .footerTools {
+      width: min(96vw, 420px);
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 4px;
+    }
+    .toolBtn {
+      flex: 1;
+      border: 0;
+      border-radius: 999px;
+      padding: 12px 8px;
+      font-size: 13px;
+      font-weight: 800;
+      color: #fff;
+      cursor: pointer;
+      box-shadow: 0 4px 0 rgba(0,0,0,.18);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+    .toolBtn:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,.18); }
+    .toolBtn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+    .toolBtn small { font-size: 10px; font-weight: 700; opacity: .9; }
+    .toolElim { background: linear-gradient(180deg, #9775fa, #6741d9); }
+    .toolRefresh { background: linear-gradient(180deg, #4dabf7, #1864ab); }
+    .toolHammer { background: linear-gradient(180deg, #69db7c, #2f9e44); }
+    .settingsRow {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      background: rgba(0, 0, 0, 0.22);
+      border-radius: 12px;
+      margin-top: 12px;
+      border: 1px solid rgba(116, 192, 252, 0.25);
+    }
+    .settingsLabel { font-size: 14px; font-weight: 700; color: #dce6ff; }
+    button.settingsSfxBtn {
+      border: 0;
+      border-radius: 10px;
+      padding: 9px 16px;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      background: linear-gradient(180deg, #868e96, #495057);
+      color: #fff;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+      min-width: 8em;
+    }
+    button.settingsSfxBtn:active { transform: translateY(1px); }
+    .btnRow { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; width: min(96vw, 420px); margin-top: 6px; }
+    button.rowBtn {
+      border: 0; border-radius: 12px; padding: 10px 14px; font-size: 14px;
+      background: #364fc7; color: #fff; cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,.25);
+      font-weight: 700;
+    }
+    button.rowBtn.secondary { background: #495057; }
+    button.rowBtn.ad { background: #862e9c; }
+    #adStatus { font-size: 12px; text-align: center; min-height: 2.4em; line-height: 1.35; color: #495057; width: min(96vw, 420px); }
+    .hint { font-size: 11px; color: #495057; text-align: center; width: min(96vw, 440px); line-height: 1.45; opacity: .92; }
+    .pill-level { cursor: pointer; user-select: none; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+    .levelModal { position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center; padding: 16px; box-sizing: border-box; }
+    .levelModal[hidden] { display: none !important; }
+    .levelModal-backdrop { position: absolute; inset: 0; background: rgba(5, 10, 22, 0.65); touch-action: none; }
+    .levelModal-panel {
+      position: relative; background: #152238; border: 1px solid #74c0fc55; border-radius: 16px;
+      padding: 14px; max-width: 400px; width: 100%; max-height: min(78vh, 520px); overflow: auto;
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45); color: #ecf2ff;
+    }
+    .levelModal-panel h3 { margin: 0 0 10px; font-size: 1rem; text-align: center; }
+    .levelModal-sub { font-size: 11px; color: #9fb3d9; text-align: center; margin-bottom: 12px; line-height: 1.35; }
+    .levelGrid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 5px; }
+    .levelGrid .lvBtn {
+      border: 0; border-radius: 8px; padding: 6px 2px; font-size: 11px; font-weight: 700;
+      background: #2d4a7c; color: #fff; cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35); line-height: 1.2;
+    }
+    .levelGrid .lvBtn small { display: block; font-size: 9px; margin-top: 3px; opacity: 0.9; color: #ffd43b; }
+    .levelGrid .lvBtn.lv-locked { opacity: 0.35; cursor: not-allowed; pointer-events: none; }
+    .levelGrid .lvBtn.lv-current { box-shadow: 0 0 0 2px #ffd43b; }
+    .modeTag {
+      font-size: 12px;
+      font-weight: 800;
+      color: #d9480f;
+      text-align: center;
+      width: min(96vw, 420px);
+      min-height: 1.2em;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <button type="button" class="gear" id="btnSettingsOpen" aria-haspopup="dialog" aria-controls="settingsModal" title="设置">⚙</button>
+    <div class="banner" id="levelBanner">第 <span id="levelNum">1</span> 关 <span id="levelStarsBan"></span></div>
+    <div class="coins">🪙 <span id="coins">0</span></div>
+  </div>
+  <div class="progressWrap"><div class="progressFill" id="progressFill"></div></div>
+  <div class="targetWrap" id="targetWrap">
+    <div class="targetGrid" id="targetGrid"></div>
+  </div>
+  <div class="middleZone" id="middleZone">
+    <div class="middleParkRow">
+      <div class="parkGrid" id="parkGrid" aria-label="中间停车格" title="有剩余消除次数时可点击继续连击"></div>
+      <div class="quotaAside" aria-label="同色剩余计数">
+        <div class="quotaRow" id="quotaRow"></div>
+      </div>
+    </div>
+  </div>
+  <div class="playShell">
+    <div class="playfield" id="playfield"></div>
+  </div>
+  <div class="modeTag" id="modeTag"></div>
+  <div class="footerTools">
+    <button type="button" class="toolBtn toolElim" id="btnElim" title="点击上方一格：消除自身及周围 8 格（有限次数）">
+      👆 消除 <small>剩余 <span id="elimLeft">3</span></small>
+    </button>
+    <button type="button" class="toolBtn toolRefresh" id="btnRefresh" title="重新随机底部布局">
+      🔁 刷新 <small>剩余 <span id="refreshLeft">1</span></small>
+    </button>
+    <button type="button" class="toolBtn toolHammer" id="btnHammer" title="锤击：清除点击格及周围两层（最多 5×5）；关卡奖励次数，用尽后可看激励广告">
+      🔨 锤子 <small>剩余 <span id="hammerLeft">0</span></small>
+    </button>
+  </div>
+  <div class="btnRow">
+    <button type="button" class="rowBtn secondary" id="btnLevels">选关</button>
+    <button type="button" class="rowBtn" id="btnNew">重开本关</button>
+    <button type="button" class="rowBtn ad" id="btnAdSlot">激励：+1 停车位</button>
+    <button type="button" class="rowBtn ad" id="btnAdHammer">激励：锤子次数</button>
+  </div>
+  <div id="settingsModal" class="levelModal" hidden aria-hidden="true">
+    <div class="levelModal-backdrop" id="settingsModalBackdrop"></div>
+    <div class="levelModal-panel" role="dialog" aria-labelledby="settingsModalTitle">
+      <h3 id="settingsModalTitle">设置</h3>
+      <p class="levelModal-sub">选项保存在本机浏览器（localStorage）。</p>
+      <div class="settingsRow">
+        <span class="settingsLabel" id="settingsSfxLabel">游戏音效</span>
+        <button type="button" class="settingsSfxBtn" id="btnSettingsSfx" aria-pressed="false" title="切换音效开关">🔊 开启</button>
+      </div>
+      <div style="margin-top:14px;text-align:center">
+        <button type="button" class="rowBtn secondary" id="settingsModalClose">关闭</button>
+      </div>
+    </div>
+  </div>
+  <div id="levelModal" class="levelModal" hidden aria-hidden="true">
+    <div class="levelModal-backdrop" id="levelModalBackdrop"></div>
+    <div class="levelModal-panel" role="dialog">
+      <h3>选择关卡</h3>
+      <p class="levelModal-sub">共 100 关：颜色与盘面密度由易到难。中间停车格<strong>单格尺寸固定</strong>；解锁数量默认 2 格，右侧<strong>看广告</strong>逐步增至 8 格。<strong>消除</strong>与<strong>锤子</strong>每关有次数，配合中间炮塔射击。入库后对<strong>最底一行同色</strong>消除后<strong>列下落、顶行补齐</strong>。</p>
+      <div id="levelGrid" class="levelGrid"></div>
+      <div style="margin-top:12px;text-align:center">
+        <button type="button" class="rowBtn secondary" id="levelModalClose">关闭</button>
+      </div>
+    </div>
+  </div>
+  <div id="adStatus" aria-live="polite"></div>
+  <p class="hint">
+    底部块用 <code>data-color</code> / <code>data-dir</code> 记录颜色与方向。入库中间格后显示<strong>同色块+箭头</strong>，再只对上方<strong>最底一行</strong>同色格做<strong>消除动画</strong>（不伤及其它层），然后<strong>列下落、顶行补齐</strong>。累计消除达标过关。<code>g001</code> 不变。
+    · <span class="pill-level" id="levelPill" role="button" tabindex="0">关卡 <strong id="levelNum2">1</strong> / <span id="levelTotal">100</span></span>
+  </p>
+  <script src="../js/crystabox-ad.js"></script>
+  <script>
+    (function () {
+      /** 去掉单行与块注释后再 JSON.parse（字符串内的 url 等不受影响） */
+      function stripJsonComments(text) {
+        var s = text.replace(/\/\*[\s\S]*?\*\//g, '');
+        var lines = s.split('\n');
+        var out = [];
+        var i,
+          j,
+          line,
+          buf,
+          c,
+          inStr,
+          esc,
+          q;
+        for (i = 0; i < lines.length; i++) {
+          line = lines[i];
+          buf = '';
+          inStr = false;
+          esc = false;
+          q = '';
+          for (j = 0; j < line.length; j++) {
+            c = line.charAt(j);
+            if (esc) {
+              buf += c;
+              esc = false;
+              continue;
+            }
+            if (c === '\\' && inStr) {
+              buf += c;
+              esc = true;
+              continue;
+            }
+            if (!inStr && (c === '"' || c === "'")) {
+              inStr = true;
+              q = c;
+              buf += c;
+              continue;
+            }
+            if (inStr && c === q) {
+              inStr = false;
+              buf += c;
+              continue;
+            }
+            if (!inStr && c === '/' && line.charAt(j + 1) === '/') break;
+            buf += c;
+          }
+          out.push(buf);
+        }
+        return out.join('\n');
+      }
+
+      /** 从 speed-config.json 读取移动/射击等节奏（同步请求失败则用默认） */
+      function loadParkinglotSpeedConfig() {
+        var defaults = {
+          parkSlidePxPerMs: 1.5,
+          parkSlideMinMs: 30,
+          parkFlyMs: 173,
+          parkSlideFallbackExtraMs: 47,
+          roadSegmentFallbackExtraMs: 53,
+          parkFlyFinishExtraMs: 40,
+          bulletFlyMs: 65,
+          bulletGapMs: 11,
+          bulletCleanupExtraMs: 38,
+          parkTurretAimMs: 100,
+          tgElimAnimMs: 52,
+          parkToElimMs: 50,
+          tgFallMs: 50,
+          gravityFallFinishExtraMs: 11,
+          chainGapMs: 50,
+          parkShootPollMs: 50
+        };
+        var out = {};
+        var k;
+        for (k in defaults) {
+          if (Object.prototype.hasOwnProperty.call(defaults, k)) out[k] = defaults[k];
+        }
+        try {
+          var xhr = new XMLHttpRequest();
+          xhr.open('GET', 'speed-config.json', false);
+          xhr.send(null);
+          if (xhr.status >= 200 && xhr.status < 300 && xhr.responseText) {
+            var parsed = JSON.parse(stripJsonComments(xhr.responseText));
+            for (k in parsed) {
+              if (!Object.prototype.hasOwnProperty.call(parsed, k)) continue;
+              if (k.charAt(0) === '_') continue;
+              var v = parsed[k];
+              if (typeof v === 'number' && !isNaN(v) && v >= 0) out[k] = v;
+            }
+          }
+        } catch (err) {}
+        return out;
+      }
+      var SP = loadParkinglotSpeedConfig();
+
+      var TR = 14, TC = 14;
+      var BR = 8, BC = 7;
+      var COLOR_COUNT = 6;
+      /** 与上方同色块一致风格的炮身填色（车身颜色 ap.color） */
+      var PARK_BARREL_PALETTE = [
+        { main: '#ef5350', stroke: '#c62828', tip: '#ff8a80', tipStroke: '#e53935' },
+        { main: '#66bb6a', stroke: '#2e7d32', tip: '#a5d6a7', tipStroke: '#43a047' },
+        { main: '#42a5f5', stroke: '#1565c0', tip: '#90caf9', tipStroke: '#1e88e5' },
+        { main: '#ffca28', stroke: '#f57f17', tip: '#ffe082', tipStroke: '#fbc02d' },
+        { main: '#ab47bc', stroke: '#6a1b9a', tip: '#ce93d8', tipStroke: '#8e24aa' },
+        { main: '#26c6da', stroke: '#00897b', tip: '#80deea', tipStroke: '#00acc1' }
+      ];
+      function buildParkBarrelSvg(colorIdx) {
+        var ci = Math.max(0, Math.min(COLOR_COUNT - 1, colorIdx | 0));
+        var p = PARK_BARREL_PALETTE[ci];
+        return (
+          '<svg class="parkTurretBarrelSvg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 44" aria-hidden="true">' +
+          '<rect x="8.5" y="14" width="11" height="22" rx="3.5" fill="' +
+          p.main +
+          '" stroke="' +
+          p.stroke +
+          '" stroke-width="1.2"/>' +
+          '<rect x="10" y="5" width="8" height="12" rx="2.5" fill="' +
+          p.tip +
+          '" stroke="' +
+          p.tipStroke +
+          '" stroke-width="1"/>' +
+          '<ellipse cx="14" cy="11" rx="3" ry="1.6" fill="' +
+          p.tip +
+          '" opacity="0.45"/>' +
+          '</svg>'
+        );
+      }
+      var LEVEL_COUNT = 100;
+      var STORAGE = 'g001_brain6_arrow_v1';
+      /** 音效静音：'1' 表示关闭音效（与关卡存档无关） */
+      var SFX_MUTE_STORAGE = 'g001_sfx_muted_v1';
+      function sfxIsMuted() {
+        try {
+          return localStorage.getItem(SFX_MUTE_STORAGE) === '1';
+        } catch (eMu) {
+          return false;
+        }
+      }
+      function sfxSetMuted(on) {
+        try {
+          localStorage.setItem(SFX_MUTE_STORAGE, on ? '1' : '0');
+        } catch (eMu2) {}
+      }
+      var MAX_PARK_SLOTS = 8;
+      /** 当前关卡中间停车格数量（2～8），每局 newRound 写入 */
+      var parkSlotCount = MAX_PARK_SLOTS;
+      var PARK_SLIDE_PX_PER_MS = SP.parkSlidePxPerMs;
+      var PARK_SLIDE_MIN_MS = SP.parkSlideMinMs;
+      var PARK_FLY_MS = SP.parkFlyMs;
+      var PARK_SLIDE_FALLBACK_EXTRA_MS = SP.parkSlideFallbackExtraMs;
+      var ROAD_SEGMENT_FALLBACK_EXTRA_MS = SP.roadSegmentFallbackExtraMs;
+      var PARK_FLY_FINISH_EXTRA_MS = SP.parkFlyFinishExtraMs;
+      var BUMP_PX = 11;
+      var PARK_TO_ELIM_MS = SP.parkToElimMs;
+      var TG_ELIM_ANIM_MS = SP.tgElimAnimMs;
+      var TG_FALL_MS = SP.tgFallMs;
+      var GRAVITY_FALL_FINISH_EXTRA_MS = SP.gravityFallFinishExtraMs;
+      var BULLET_FLY_MS = SP.bulletFlyMs;
+      var BULLET_GAP_MS = SP.bulletGapMs;
+      var BULLET_CLEANUP_EXTRA_MS = SP.bulletCleanupExtraMs;
+      var PARK_TURRET_AIM_MS = SP.parkTurretAimMs;
+      var PARK_SHOOT_POLL_MS = SP.parkShootPollMs;
+      try {
+        document.documentElement.style.setProperty('--park-turret-aim', PARK_TURRET_AIM_MS + 'ms');
+      } catch (ePta) {}
+      var CELL_PAD = 3;
+
+      /** assets/sounds/*.wav：Web Audio + HTMLAudio 池；击中只用 HTMLAudio（见 sfxPlay 注释）。 */
+      var sfxCtx = null;
+      var sfxBuf = {};
+      var sfxUrls = {
+        shoot: 'assets/sounds/sfx_shoot.wav',
+        hit: 'assets/sounds/sfx_hit.wav',
+        ui: 'assets/sounds/sfx_ui.wav',
+        win: 'assets/sounds/sfx_win.wav',
+        bump: 'assets/sounds/sfx_bump.wav'
+      };
+      var sfxHtml5Pool = {};
+      var sfxHtml5Rot = {};
+      var SFX_HTML5_VOICES = 5;
+      var sfxHitStreak = 0;
+      var sfxHitStreakAt = 0;
+      /** 页签隐藏 / WebView 退后台时禁止新发声并掐掉 HTMLAudio；避免 resume 回调延后到返回前台才播 */
+      function sfxIsPageHidden() {
+        try {
+          return typeof document !== 'undefined' && document.hidden;
+        } catch (eH) {
+          return false;
+        }
+      }
+      function sfxHardStopAll() {
+        var k, pool, i, a;
+        try {
+          if (sfxCtx && sfxCtx.state === 'running') sfxCtx.suspend();
+        } catch (eSus) {}
+        for (k in sfxHtml5Pool) {
+          if (!Object.prototype.hasOwnProperty.call(sfxHtml5Pool, k)) continue;
+          pool = sfxHtml5Pool[k];
+          if (!pool) continue;
+          for (i = 0; i < pool.length; i++) {
+            a = pool[i];
+            try {
+              a.pause();
+            } catch (eP) {}
+            try {
+              a.currentTime = 0;
+            } catch (eT) {}
+          }
+        }
+      }
+      document.addEventListener(
+        'visibilitychange',
+        function () {
+          if (sfxIsPageHidden()) sfxHardStopAll();
+          else sfxUnlockGesture();
+        },
+        false
+      );
+      window.addEventListener('pagehide', sfxHardStopAll, false);
+      function sfxWebAudioUsable() {
+        try {
+          if (typeof navigator !== 'undefined' && navigator.webdriver) return false;
+        } catch (eW) {}
+        return true;
+      }
+      function sfxEnsureCtx() {
+        if (sfxCtx) return sfxCtx;
+        if (!sfxWebAudioUsable()) return null;
+        try {
+          sfxCtx = new (window.AudioContext || window.webkitAudioContext)();
+        } catch (eSfx) {
+          sfxCtx = null;
+        }
+        return sfxCtx;
+      }
+      function sfxResumeIfNeeded() {
+        var c = sfxEnsureCtx();
+        if (c && c.state === 'suspended') return c.resume().catch(function () {});
+        return Promise.resolve();
+      }
+      function sfxUnlockGesture() {
+        if (sfxIsMuted()) return;
+        sfxEnsureCtx();
+        sfxResumeIfNeeded();
+      }
+      window.addEventListener('pointerdown', sfxUnlockGesture, true);
+      window.addEventListener('touchend', sfxUnlockGesture, true);
+      window.addEventListener('click', sfxUnlockGesture, true);
+      window.addEventListener('keydown', sfxUnlockGesture, true);
+      function sfxInstallHtml5Pools() {
+        var k, i, a, url;
+        for (k in sfxUrls) {
+          if (!Object.prototype.hasOwnProperty.call(sfxUrls, k)) continue;
+          url = sfxUrls[k];
+          sfxHtml5Pool[k] = [];
+          sfxHtml5Rot[k] = 0;
+          for (i = 0; i < SFX_HTML5_VOICES; i++) {
+            a = new Audio();
+            a.preload = 'auto';
+            a.src = url;
+            sfxHtml5Pool[k].push(a);
+            try {
+              a.load();
+            } catch (eLd) {}
+          }
+        }
+      }
+      function sfxDecodeOne(key, url, done) {
+        var c = sfxEnsureCtx();
+        if (!c) {
+          if (done) done(false);
+          return;
+        }
+        fetch(url)
+          .then(function (r) {
+            if (!r.ok) throw new Error('sfx http');
+            return r.arrayBuffer();
+          })
+          .then(function (ab) {
+            return c.decodeAudioData(ab.slice(0));
+          })
+          .then(function (buf) {
+            sfxBuf[key] = buf;
+            if (done) done(true);
+          })
+          .catch(function () {
+            if (done) done(false);
+          });
+      }
+      function sfxLoadAll() {
+        sfxInstallHtml5Pools();
+        var order = ['ui', 'bump', 'hit', 'shoot', 'win'];
+        var i, k;
+        for (i = 0; i < order.length; i++) {
+          k = order[i];
+          if (Object.prototype.hasOwnProperty.call(sfxUrls, k)) sfxDecodeOne(k, sfxUrls[k], null);
+        }
+        for (k in sfxUrls) {
+          if (!Object.prototype.hasOwnProperty.call(sfxUrls, k)) continue;
+          if (order.indexOf(k) >= 0) continue;
+          sfxDecodeOne(k, sfxUrls[k], null);
+        }
+      }
+      function sfxPlayHtml5(key, gainVal, playbackRate) {
+        if (sfxIsMuted()) return;
+        if (sfxIsPageHidden()) return;
+        var url = sfxUrls[key];
+        if (!url) return;
+        var vol = Math.min(1, Math.max(0, typeof gainVal === 'number' ? gainVal : 0.5));
+        var rate =
+          typeof playbackRate === 'number' && !isNaN(playbackRate)
+            ? Math.max(0.55, Math.min(1.85, playbackRate))
+            : 1;
+        var pool = sfxHtml5Pool[key];
+        var a;
+        if (pool && pool.length) {
+          a = pool[sfxHtml5Rot[key] % pool.length];
+          sfxHtml5Rot[key]++;
+        } else {
+          try {
+            a = new Audio(url);
+          } catch (eN) {
+            return;
+          }
+        }
+        try {
+          a.volume = vol;
+          a.playbackRate = rate;
+          try {
+            a.pause();
+          } catch (eP) {}
+          try {
+            a.currentTime = 0;
+          } catch (eT) {}
+          var pr = a.play();
+          if (pr && typeof pr.catch === 'function') pr.catch(function () {});
+        } catch (eH5) {}
+      }
+      function sfxPlay(key, gainVal, playbackRate) {
+        if (sfxIsMuted()) return;
+        if (sfxIsPageHidden()) return;
+        var vol = typeof gainVal === 'number' ? gainVal : 0.5;
+        var rate =
+          typeof playbackRate === 'number' && !isNaN(playbackRate)
+            ? Math.max(0.55, Math.min(1.85, playbackRate))
+            : 1;
+
+        var c = sfxEnsureCtx();
+        var buf = sfxBuf[key];
+        if (!buf || !c) {
+          sfxPlayHtml5(key, vol, playbackRate);
+          return;
+        }
+
+        function runWebAudio() {
+          if (sfxIsPageHidden()) return;
+          try {
+            var src = c.createBufferSource();
+            src.buffer = buf;
+            var g = c.createGain();
+            g.gain.value = vol;
+            src.playbackRate.value = rate;
+            src.connect(g);
+            g.connect(c.destination);
+            src.start(0);
+          } catch (eWa) {
+            sfxPlayHtml5(key, vol, playbackRate);
+          }
+        }
+
+        if (c.state !== 'running') {
+          c.resume()
+            .then(runWebAudio)
+            .catch(function () {
+              sfxPlayHtml5(key, vol, playbackRate);
+            });
+        } else {
+          runWebAudio();
+        }
+      }
+      /**
+       * 击中：仅在回调栈内同步调度 WebAudio start(0)，不用 resume().then / 不设延迟计时器播音频。
+       * 上下文未 running 时退回 HTML5（仍无刻意 setTimeout 包一层）。
+       */
+      function sfxPlayHitNow(vol, playbackRate) {
+        if (sfxIsMuted()) return;
+        if (sfxIsPageHidden()) return;
+        var rate =
+          typeof playbackRate === 'number' && !isNaN(playbackRate)
+            ? Math.max(0.55, Math.min(1.85, playbackRate))
+            : 1;
+        var v = typeof vol === 'number' ? vol : 0.92;
+        var c = sfxEnsureCtx();
+        var buf = sfxBuf.hit;
+        if (buf && c && c.state === 'running') {
+          try {
+            var src = c.createBufferSource();
+            src.buffer = buf;
+            var g = c.createGain();
+            g.gain.value = v;
+            src.playbackRate.value = rate;
+            src.connect(g);
+            g.connect(c.destination);
+            src.start(0);
+            return;
+          } catch (eHit0) {}
+        }
+        sfxPlayHtml5('hit', v, rate);
+      }
+      /** 上方目标被炮弹/道具击中：`playHitExplosionOnCell` → sfx_hit（连击时半音阶梯抬 pitch） */
+      function sfxHitRhythmic() {
+        var now = Date.now();
+        if (now - sfxHitStreakAt > 420) sfxHitStreak = 0;
+        sfxHitStreakAt = now;
+        var semi = [0, 2, 4, 7, 9, 12][sfxHitStreak % 6];
+        sfxHitStreak++;
+        sfxPlayHitNow(0.92, Math.pow(2, semi / 12) * 0.98);
+      }
+      function sfxShoot() {
+        sfxPlay('shoot', 0.32, 1);
+      }
+      function sfxBump() {
+        sfxPlay('bump', 0.36, 1);
+      }
+      function sfxUi() {
+        sfxPlay('ui', 0.26, 1);
+      }
+      function sfxUiSoft() {
+        sfxPlay('ui', 0.18, 1.04);
+      }
+      function sfxWin() {
+        sfxPlay('win', 0.52, 1);
+      }
+      sfxLoadAll();
+
+      /** 槽位 slotStart -> 该车射击会话（允许多个不同槽位并行） */
+      var activeParkBySlot = {};
+      /** 底部暂无同色时暂停射击，按槽位保存状态 */
+      var parkDeliveryPausedBySlot = {};
+      /** 暂停槽位轮询定时器 slot -> timeoutId */
+      var parkShootPollTimerBySlot = {};
+      /** 炮塔瞄准发射延时：按车位槽位独立，互不取消其它格；重建/清空 DOM 时清除对应槽位 */
+      var parkTurretAimTimerBySlot = {};
+      var parkElimQueue = [];
+      /** 底行列号 -> 占用槽位：并行同色车时避免多弹打同一格 */
+      var parkBottomColReserved = {};
+
+      function parkSlotKey(slotStart) {
+        return String(slotStart);
+      }
+      function anyActiveParkDelivery() {
+        var k;
+        for (k in activeParkBySlot) {
+          if (Object.prototype.hasOwnProperty.call(activeParkBySlot, k)) return true;
+        }
+        return false;
+      }
+      function getActiveAp(slotStart) {
+        return activeParkBySlot[parkSlotKey(slotStart)] || null;
+      }
+      function setActiveAp(ap) {
+        activeParkBySlot[parkSlotKey(ap.slotStart)] = ap;
+      }
+      function deleteActiveAp(ap) {
+        delete activeParkBySlot[parkSlotKey(ap.slotStart)];
+      }
+
+      var ARROW_CHAR = ['▲', '▶', '▼', '◀'];
+      var DIR_VEC = [ [-1, 0], [0, 1], [1, 0], [0, -1] ];
+
+      var state = load();
+      /** E2E：穷举箭头测试需要足够中间车位，否则会长期占满无法出库（不写 localStorage） */
+      try {
+        if (/[?&]e2e_exhaustive=1(?:&|$)/.test(location.search || '')) {
+          state.currentLevel = 1;
+          state.parkSlotExpand = MAX_PARK_SLOTS - 2;
+        }
+      } catch (eExhaustive) {}
+      var target = [];
+      var remainByColor = [];
+      var initialRemainSum = 0;
+      var blocks = [];
+      var occ = [];
+      var locked = false;
+      var elimUses = 3;
+      /** 锤子剩余次数（关卡配给；用尽仅能通过激励进入锤模式） */
+      var hammerUses = 0;
+      var refreshUses = 1;
+      var eliminateMode = false;
+      var hammerMode = false;
+
+      var targetGridEl = document.getElementById('targetGrid');
+      var targetWrapEl = document.getElementById('targetWrap');
+      var playfieldEl = document.getElementById('playfield');
+      var parkGridEl = document.getElementById('parkGrid');
+      var quotaRowEl = document.getElementById('quotaRow');
+      var modeTagEl = document.getElementById('modeTag');
+      var slotFilled = [];
+      var eliminatedCount = 0;
+      var activeColorCount = 6;
+
+      function load() {
+        try {
+          var j = JSON.parse(localStorage.getItem(STORAGE) || '{}');
+          var maxU = Math.max(1, Math.min(LEVEL_COUNT, parseInt(j.maxUnlocked, 10) || 1));
+          var cur = Math.max(1, Math.min(LEVEL_COUNT, parseInt(j.currentLevel, 10) || 1));
+          if (cur > maxU) cur = maxU;
+          var pse = parseInt(j.parkSlotExpand, 10);
+          if (isNaN(pse)) pse = 0;
+          pse = Math.max(0, Math.min(MAX_PARK_SLOTS - 2, pse));
+          return {
+            coins: Math.max(0, parseInt(j.coins, 10) || 0),
+            maxUnlocked: maxU,
+            currentLevel: cur,
+            levelStars: j.levelStars && typeof j.levelStars === 'object' ? j.levelStars : {},
+            parkSlotExpand: pse
+          };
+        } catch (e) {
+          return { coins: 0, maxUnlocked: 1, currentLevel: 1, levelStars: {}, parkSlotExpand: 0 };
+        }
+      }
+      function save() {
+        localStorage.setItem(STORAGE, JSON.stringify({
+          coins: state.coins,
+          maxUnlocked: state.maxUnlocked,
+          currentLevel: state.currentLevel,
+          levelStars: state.levelStars,
+          parkSlotExpand: Math.max(0, Math.min(MAX_PARK_SLOTS - 2, state.parkSlotExpand | 0))
+        }));
+      }
+
+      function starsEarned(stepsUsed, budget) {
+        if (stepsUsed <= Math.floor(budget * 0.45)) return 3;
+        if (stepsUsed <= Math.floor(budget * 0.72)) return 2;
+        return 1;
+      }
+      function starLabel(n) {
+        if (!n || n < 1) return '—';
+        return '\u2605'.repeat(n) + '\u2606'.repeat(3 - n);
+      }
+
+      /** 关卡 1～100：颜色种类与盘面密度由易到难 */
+      function getLevelDef(lv) {
+        lv = Math.max(1, Math.min(LEVEL_COUNT, lv | 0));
+        var rng = mulberry32((lv * 1315423911) >>> 0);
+        var cols = Math.min(COLOR_COUNT, 3 + Math.floor((lv - 1) / 14));
+        var density = 0.45 + Math.min(0.43, (lv - 1) * 0.00435);
+        return { lv: lv, colorCount: cols, density: density, seedNote: rng };
+      }
+
+      /** 消除 / 锤子 / 刷新 次数（迫使中后期必须用道具） */
+      function levelToolBudgets(lv) {
+        lv = Math.max(1, Math.min(LEVEL_COUNT, lv | 0));
+        var elim = Math.max(1, Math.min(7, 8 - Math.floor((lv - 1) / 18)));
+        var hammer = 0;
+        if (lv >= 6) hammer = 1;
+        if (lv >= 22) hammer = 2;
+        if (lv >= 45) hammer = 3;
+        if (lv >= 78) hammer = Math.max(2, hammer - 1);
+        var refresh = lv <= 18 ? 1 : lv <= 52 ? 1 : 0;
+        return { elim: elim, hammer: hammer, refresh: refresh };
+      }
+
+      function mulberry32(a) {
+        return function () {
+          a |= 0; a = (a + 0x6D2B79F5) | 0;
+          var t = Math.imul(a ^ (a >>> 15), 1 | a);
+          t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+          return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        };
+      }
+
+      function randInt(rng, a, b) {
+        return a + Math.floor(rng() * (b - a + 1));
+      }
+
+      function buildTarget(lv) {
+        var def = getLevelDef(lv);
+        var rng = mulberry32((lv * 2654435761 + 104729) >>> 0);
+        var grid = [];
+        var i, j;
+        for (i = 0; i < TR; i++) {
+          var row = [];
+          for (j = 0; j < TC; j++) row.push(randInt(rng, 0, def.colorCount - 1));
+          grid.push(row);
+        }
+        var rb = [];
+        for (i = 0; i < COLOR_COUNT; i++) rb.push(0);
+        for (i = 0; i < TR; i++) {
+          for (j = 0; j < TC; j++) rb[grid[i][j]]++;
+        }
+        return { grid: grid, remainByColor: rb, def: def };
+      }
+
+      /** 按各颜色「射击总次数」hist[c] 生成上方 TR×TC 打乱盘面（与下方车队颜色/配额一致） */
+      function buildTargetFromShotHistogram(lv, hist, colorCount, rng) {
+        var sum = 0,
+          c,
+          i;
+        for (c = 0; c < colorCount; c++) sum += hist[c] | 0;
+        if (sum !== TR * TC) return null;
+        var flat = [];
+        for (c = 0; c < colorCount; c++) {
+          for (i = 0; i < (hist[c] | 0); i++) flat.push(c);
+        }
+        for (i = flat.length - 1; i > 0; i--) {
+          var j = Math.floor(rng() * (i + 1));
+          var t = flat[i];
+          flat[i] = flat[j];
+          flat[j] = t;
+        }
+        var grid = [];
+        var idx = 0,
+          r,
+          cc;
+        for (r = 0; r < TR; r++) {
+          var row = [];
+          for (cc = 0; cc < TC; cc++) row.push(flat[idx++]);
+          grid.push(row);
+        }
+        var rb = [];
+        for (c = 0; c < COLOR_COUNT; c++) rb[c] = c < colorCount ? hist[c] | 0 : 0;
+        return { grid: grid, remainByColor: rb, def: getLevelDef(lv) };
+      }
+
+      function renderTarget() {
+        targetGridEl.style.gridTemplateColumns = 'repeat(' + TC + ', 1fr)';
+        targetGridEl.innerHTML = '';
+        var r, c, col, cell;
+        for (r = 0; r < TR; r++) {
+          for (c = 0; c < TC; c++) {
+            cell = document.createElement('div');
+            col = target[r][c];
+            cell.dataset.r = String(r);
+            cell.dataset.c = String(c);
+            if (col < 0) {
+              cell.className = 'tgCell empty';
+            } else {
+              cell.className = 'tgCell c' + col;
+            }
+            targetGridEl.appendChild(cell);
+          }
+        }
+      }
+
+      function totalRemain() {
+        var s = 0, i;
+        for (i = 0; i < COLOR_COUNT; i++) s += remainByColor[i];
+        return s;
+      }
+
+      function recomputeRemainFromTarget() {
+        var i, r, c, col;
+        for (i = 0; i < COLOR_COUNT; i++) remainByColor[i] = 0;
+        for (r = 0; r < TR; r++) {
+          for (c = 0; c < TC; c++) {
+            col = target[r][c];
+            if (col >= 0 && col < COLOR_COUNT) remainByColor[col]++;
+          }
+        }
+      }
+
+      function updateProgress() {
+        var pct = initialRemainSum <= 0 ? 100 : Math.round(100 * Math.min(1, eliminatedCount / initialRemainSum));
+        document.getElementById('progressFill').style.width = Math.max(0, Math.min(100, pct)) + '%';
+      }
+
+      function rectBoardIntersect(nr, nc, h, w) {
+        var r0 = Math.max(0, nr);
+        var r1 = Math.min(BR, nr + h);
+        var c0 = Math.max(0, nc);
+        var c1 = Math.min(BC, nc + w);
+        return r1 > r0 && c1 > c0;
+      }
+
+      /** 逻辑网格最外一圈为四周车道，不可摆放 */
+      function cellIsOuterRoad(r, c) {
+        return r === 0 || r === BR - 1 || c === 0 || c === BC - 1;
+      }
+
+      /** 四周车道外：内侧整块区域均可摆块（仅排除最外一圈道路格） */
+      function blockIsValidParkingSpawn(r, c, h, w) {
+        var r2, c2;
+        for (r2 = r; r2 < r + h; r2++) {
+          for (c2 = c; c2 < c + w; c2++) {
+            if (r2 < 0 || r2 >= BR || c2 < 0 || c2 >= BC) return false;
+            if (cellIsOuterRoad(r2, c2)) return false;
+          }
+        }
+        return true;
+      }
+
+      function footprintTouchesRoad(nr, nc, h, w) {
+        var r2, c2;
+        for (r2 = nr; r2 < nr + h; r2++) {
+          for (c2 = nc; c2 < nc + w; c2++) {
+            if (r2 < 0 || r2 >= BR || c2 < 0 || c2 >= BC) continue;
+            if (cellIsOuterRoad(r2, c2)) return true;
+          }
+        }
+        return false;
+      }
+
+      /** 盘面内占用格均在「内侧场地」（非四周道路）；越界格忽略 */
+      function footprintAllParkingCells(nr, nc, h, w) {
+        var r2, c2, anyIn = false;
+        for (r2 = nr; r2 < nr + h; r2++) {
+          for (c2 = nc; c2 < nc + w; c2++) {
+            if (r2 < 0 || r2 >= BR || c2 < 0 || c2 >= BC) continue;
+            anyIn = true;
+            if (cellIsOuterRoad(r2, c2)) return false;
+          }
+        }
+        return anyIn;
+      }
+
+      function countInnerPlayfieldCells() {
+        var n = 0, r, c;
+        for (r = 0; r < BR; r++) {
+          for (c = 0; c < BC; c++) {
+            if (!cellIsOuterRoad(r, c)) n++;
+          }
+        }
+        return n;
+      }
+
+      function appendParkingUnderlay() {
+        var m = playfieldMetrics();
+        var lane = m.lane;
+        var iw = m.innerW;
+        var rm = grayRoadLaneMetrics(m);
+        function strip(cls, left, top, wpx, hpx) {
+          var d = document.createElement('div');
+          d.className = 'pfUnderlay ' + cls;
+          d.style.left = left + 'px';
+          d.style.top = top + 'px';
+          d.style.width = wpx + 'px';
+          d.style.height = hpx + 'px';
+          playfieldEl.appendChild(d);
+        }
+        strip('pfPark', lane, lane, BC * iw, BR * m.innerH);
+        strip('pfRoad', rm.top.left, rm.top.top, rm.top.width, rm.top.height);
+        strip('pfRoad', rm.bottom.left, rm.bottom.top, rm.bottom.width, rm.bottom.height);
+        strip('pfRoad', rm.left.left, rm.left.top, rm.left.width, rm.left.height);
+        strip('pfRoad', rm.right.left, rm.right.top, rm.right.width, rm.right.height);
+      }
+
+      /** 重力+顶行随机补块；返回需播放下落/入场位移的格子列表 */
+      function applyGravityRefillCollectMoves() {
+        var moves = [];
+        var c, r, stack, ri, si, entry;
+        for (c = 0; c < TC; c++) {
+          stack = [];
+          for (r = TR - 1; r >= 0; r--) {
+            if (target[r][c] >= 0) stack.push({ color: target[r][c], oldR: r });
+          }
+          ri = TR - 1;
+          for (si = 0; si < stack.length; si++) {
+            entry = stack[si];
+            target[ri][c] = entry.color;
+            if (entry.oldR !== ri) moves.push({ kind: 'fall', r: ri, c: c, oldR: entry.oldR });
+            ri--;
+          }
+          while (ri >= 0) {
+            target[ri][c] = Math.floor(Math.random() * activeColorCount);
+            moves.push({ kind: 'spawn', r: ri, c: c });
+            ri--;
+          }
+        }
+        return moves;
+      }
+
+      function applyGravityAndRefillTarget() {
+        applyGravityRefillCollectMoves();
+      }
+
+      function getTargetCellStridePx() {
+        var cells = targetGridEl.querySelectorAll('.tgCell');
+        if (cells.length >= TC + 1) {
+          var a = cells[0].getBoundingClientRect();
+          var b = cells[TC].getBoundingClientRect();
+          var dy = b.top - a.top;
+          if (Math.abs(dy) > 0.5) return Math.abs(dy);
+        }
+        if (cells.length) {
+          var h = cells[0].getBoundingClientRect().height;
+          var g = 1;
+          try {
+            var cs = window.getComputedStyle(targetGridEl);
+            g = parseFloat(cs.rowGap || cs.gap || '1') || 1;
+          } catch (e) {}
+          return h + g;
+        }
+        var gh = targetGridEl.clientHeight || 100;
+        return Math.max(6, gh / TR);
+      }
+
+      function runTargetGravityFallAnimations(moves, done) {
+        if (!moves.length) {
+          if (done) window.setTimeout(done, 0);
+          return;
+        }
+        renderTarget();
+        var stride = Math.max(4, getTargetCellStridePx());
+        var durS = (TG_FALL_MS / 1000).toFixed(3) + 's';
+        var els = [];
+        moves.forEach(function (mv) {
+          var el = targetGridEl.querySelector('.tgCell[data-r="' + mv.r + '"][data-c="' + mv.c + '"]');
+          if (!el) return;
+          var dy = 0;
+          if (mv.kind === 'fall') dy = -(mv.r - mv.oldR) * stride;
+          else dy = -(mv.r + 1) * stride;
+          el.classList.add('tgGravityMoving');
+          el.style.transition = 'none';
+          el.style.transform = 'translateY(' + dy + 'px)';
+          els.push(el);
+        });
+        targetGridEl.offsetHeight;
+        window.requestAnimationFrame(function () {
+          window.requestAnimationFrame(function () {
+            els.forEach(function (el) {
+              el.style.transition = 'transform ' + durS + ' cubic-bezier(0.28, 0.65, 0.36, 1)';
+              el.style.transform = 'translateY(0)';
+            });
+            window.setTimeout(function () {
+              els.forEach(function (el) {
+                el.classList.remove('tgGravityMoving');
+                el.style.transition = '';
+                el.style.transform = '';
+                el.style.zIndex = '';
+              });
+              if (done) done();
+            }, TG_FALL_MS + GRAVITY_FALL_FINISH_EXTRA_MS);
+          });
+        });
+      }
+
+      function applyGravityRefillWithFallAnimation(done) {
+        var moves = applyGravityRefillCollectMoves();
+        runTargetGravityFallAnimations(moves, done);
+      }
+
+      /** 盘面变化后：暂停中的车位若底行已同色则与其它车位并行自动续射 */
+      function wakePausedParkSlotsIfReady() {
+        if (locked) return;
+        var keys = [];
+        var k;
+        for (k in parkDeliveryPausedBySlot) {
+          if (Object.prototype.hasOwnProperty.call(parkDeliveryPausedBySlot, k)) keys.push(k);
+        }
+        var ii, sk, ap;
+        for (ii = 0; ii < keys.length; ii++) {
+          k = keys[ii];
+          ap = parkDeliveryPausedBySlot[k];
+          sk = parseInt(k, 10);
+          if (isNaN(sk) || !ap || ap.remaining <= 0) continue;
+          if (getActiveAp(sk)) continue;
+          renderTarget();
+          if (!collectBottomRowSameColor(ap.color, 1).length) continue;
+          clearParkShootPoll(sk);
+          delete parkDeliveryPausedBySlot[k];
+          setParkBayWaitTapSlotRange(ap.slotStart, ap.span, false);
+          refreshParkGridActiveTapOutline();
+          setActiveAp(ap);
+          runParkElimWave(ap);
+        }
+      }
+
+      /** 多车位并行消除时合并为一次重力，避免并发两次改写 target */
+      var gravityCoalescePending = [];
+      var gravityCoalesceScheduled = false;
+      function scheduleGravityCoalesced(done) {
+        if (typeof done === 'function') gravityCoalescePending.push(done);
+        if (gravityCoalesceScheduled) return;
+        gravityCoalesceScheduled = true;
+        window.setTimeout(function () {
+          gravityCoalesceScheduled = false;
+          var batch = gravityCoalescePending.slice();
+          gravityCoalescePending.length = 0;
+          applyGravityRefillWithFallAnimation(function () {
+            var bi;
+            for (bi = 0; bi < batch.length; bi++) {
+              if (typeof batch[bi] === 'function') batch[bi]();
+            }
+            wakePausedParkSlotsIfReady();
+          });
+        }, 0);
+      }
+
+      function collectBottomRowSameColor(color, maxN) {
+        var row = TR - 1;
+        var out = [];
+        var c;
+        for (c = 0; c < TC && out.length < maxN; c++) {
+          if (target[row][c] === color) out.push([row, c]);
+        }
+        return out;
+      }
+
+      function parkShootPollKey(slot) {
+        return String(slot);
+      }
+
+      function clearParkShootPoll(slot) {
+        var key = parkShootPollKey(slot);
+        var tid = parkShootPollTimerBySlot[key];
+        if (tid != null) {
+          window.clearTimeout(tid);
+          delete parkShootPollTimerBySlot[key];
+        }
+      }
+
+      function clearAllParkShootPolls() {
+        var key;
+        for (key in parkShootPollTimerBySlot) {
+          if (Object.prototype.hasOwnProperty.call(parkShootPollTimerBySlot, key)) {
+            window.clearTimeout(parkShootPollTimerBySlot[key]);
+          }
+        }
+        parkShootPollTimerBySlot = {};
+      }
+
+      /** 剩余射击次数但底行暂无同色时：定时检测，符合条件则自动续射 */
+      function scheduleParkShootPoll(slotStart) {
+        clearParkShootPoll(slotStart);
+        var delay = Math.max(40, PARK_SHOOT_POLL_MS);
+        var key = parkShootPollKey(slotStart);
+        function tick() {
+          delete parkShootPollTimerBySlot[key];
+          var ap = parkDeliveryPausedBySlot[slotStart];
+          if (!ap || ap.remaining <= 0) return;
+          if (locked) {
+            parkShootPollTimerBySlot[key] = window.setTimeout(tick, delay);
+            return;
+          }
+          if (getActiveAp(slotStart)) {
+            parkShootPollTimerBySlot[key] = window.setTimeout(tick, delay);
+            return;
+          }
+          renderTarget();
+          var one = collectBottomRowSameColor(ap.color, 1);
+          if (one.length) {
+            if (locked || getActiveAp(slotStart)) {
+              parkShootPollTimerBySlot[key] = window.setTimeout(tick, delay);
+              return;
+            }
+            clearParkShootPoll(slotStart);
+            delete parkDeliveryPausedBySlot[slotStart];
+            setParkBayWaitTapSlotRange(slotStart, ap.span, false);
+            refreshParkGridActiveTapOutline();
+            setActiveAp(ap);
+            runParkElimWave(ap);
+            return;
+          }
+          parkShootPollTimerBySlot[key] = window.setTimeout(tick, delay);
+        }
+        parkShootPollTimerBySlot[key] = window.setTimeout(tick, delay);
+      }
+
+      /** 瞄准结束后恢复；取消待发弹射时也要恢复，避免 wrap 永久停在 paused */
+      function resumeParkTurretIdleForSlot(sk) {
+        var bay = parkGridEl && parkGridEl.querySelector('.parkBay[data-slot="' + sk + '"]');
+        var wrap = bay && bay.querySelector('.parkTurretWrap');
+        if (wrap) wrap.style.animationPlayState = '';
+      }
+
+      function clearParkTurretAimTimerForSlot(sk) {
+        var tid = parkTurretAimTimerBySlot[sk];
+        if (tid) {
+          clearTimeout(tid);
+          delete parkTurretAimTimerBySlot[sk];
+        }
+        resumeParkTurretIdleForSlot(sk);
+      }
+
+      function clearParkTurretAimTimersForRange(slotStart, span) {
+        var i;
+        for (i = 0; i < span; i++) clearParkTurretAimTimerForSlot(slotStart + i);
+      }
+
+      function paintParkOccupant(ap) {
+        if (!parkGridEl || !ap || ap.slotStart < 0 || ap.span <= 0) return;
+        var i, bay, chip, num, foot, tw, mount, pivot, wheels, tMuz;
+        var wheelsSvg =
+          '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 12" aria-hidden="true">' +
+          '<ellipse cx="14" cy="6" rx="12" ry="5" fill="#546e7a" stroke="#37474f" stroke-width="1"/>' +
+          '<ellipse cx="14" cy="6" rx="7.5" ry="3" fill="#90a4ae"/>' +
+          '</svg>';
+        for (i = 0; i < ap.span; i++) {
+          bay = parkGridEl.querySelector('.parkBay[data-slot="' + (ap.slotStart + i) + '"]');
+          if (!bay) continue;
+          clearParkTurretAimTimerForSlot(ap.slotStart + i);
+          bay.innerHTML = '';
+          var cxClr;
+          for (cxClr = 0; cxClr < COLOR_COUNT; cxClr++) bay.classList.remove('c' + cxClr);
+          bay.classList.add('parkBay-occupied', 'c' + ap.color);
+          tw = document.createElement('div');
+          tw.className = 'parkTurretWrap';
+          mount = document.createElement('div');
+          mount.className = 'parkTurretMount';
+          pivot = document.createElement('div');
+          pivot.className = 'parkTurretBarrelPivot';
+          pivot.style.transform = 'rotate(0deg)';
+          pivot.style.transition =
+            'transform ' + PARK_TURRET_AIM_MS + 'ms cubic-bezier(0.34, 0.72, 0.24, 1)';
+          pivot.innerHTML = buildParkBarrelSvg(ap.color);
+          tMuz = document.createElement('span');
+          tMuz.className = 'parkTurretMuzzle';
+          tMuz.setAttribute('aria-hidden', 'true');
+          pivot.appendChild(tMuz);
+          wheels = document.createElement('div');
+          wheels.className = 'parkTurretWheels';
+          wheels.innerHTML = wheelsSvg;
+          mount.appendChild(pivot);
+          mount.appendChild(wheels);
+          tw.appendChild(mount);
+          bay.appendChild(tw);
+          chip = document.createElement('div');
+          chip.className = 'parkChip c' + ap.color;
+          chip.title = '同色射击 · 剩余 ' + ap.remaining + ' 格 · 可点击停车带连击';
+          foot = document.createElement('div');
+          foot.className = 'parkRemainFoot';
+          num = document.createElement('span');
+          num.className = 'parkRemain';
+          num.textContent = String(ap.remaining);
+          foot.appendChild(num);
+          bay.appendChild(chip);
+          bay.appendChild(foot);
+          chip.style.animation = 'none';
+          chip.style.transition = 'none';
+          foot.style.animation = 'none';
+          foot.style.transition = 'none';
+          num.style.animation = 'none';
+          num.style.transition = 'none';
+        }
+      }
+
+      function refreshParkGridActiveTapOutline() {
+        if (!parkGridEl) return;
+        var k,
+          hasPaused = false;
+        for (k in parkDeliveryPausedBySlot) {
+          if (Object.prototype.hasOwnProperty.call(parkDeliveryPausedBySlot, k)) {
+            hasPaused = true;
+            break;
+          }
+        }
+        if (hasPaused) parkGridEl.classList.add('parkGrid-activeTap');
+        else parkGridEl.classList.remove('parkGrid-activeTap');
+      }
+
+      function setParkBayWaitTapSlotRange(slotStart, span, on) {
+        if (!parkGridEl || slotStart < 0 || span <= 0) return;
+        var i, bay;
+        for (i = 0; i < span; i++) {
+          bay = parkGridEl.querySelector('.parkBay[data-slot="' + (slotStart + i) + '"]');
+          if (!bay || !bay.classList.contains('parkBay-occupied')) continue;
+          if (on) bay.classList.add('parkBay-waitTap');
+          else bay.classList.remove('parkBay-waitTap');
+        }
+        refreshParkGridActiveTapOutline();
+      }
+
+      /** 关卡重置等：去掉全部槽位等待点击样式 */
+      function setParkWaitingTap(on) {
+        if (!on && parkGridEl) {
+          var i, bay;
+          for (i = 0; i < MAX_PARK_SLOTS; i++) {
+            bay = parkGridEl.querySelector('.parkBay[data-slot="' + i + '"]');
+            if (bay) bay.classList.remove('parkBay-waitTap');
+          }
+          parkGridEl.classList.remove('parkGrid-activeTap');
+        }
+      }
+
+      function clearParkBays(slotStart, span) {
+        if (!parkGridEl || slotStart < 0 || span <= 0) return;
+        cancelFlyingBulletsForParkSlots(slotStart, span);
+        var i, bay;
+        clearParkTurretAimTimersForRange(slotStart, span);
+        for (i = 0; i < span; i++) {
+          delete parkDeliveryPausedBySlot[slotStart + i];
+          clearParkShootPoll(slotStart + i);
+        }
+        refreshParkGridActiveTapOutline();
+        setParkBayWaitTapSlotRange(slotStart, span, false);
+        for (i = 0; i < span; i++) {
+          bay = parkGridEl.querySelector('.parkBay[data-slot="' + (slotStart + i) + '"]');
+          if (!bay) continue;
+          bay.innerHTML = '';
+          bay.classList.remove('parkBay-occupied', 'parkBay-waitTap');
+          var cx;
+          for (cx = 0; cx < COLOR_COUNT; cx++) bay.classList.remove('c' + cx);
+        }
+      }
+
+      /** 子弹起点：优先炮口锚点；否则车位顶边水平中心 */
+      function getParkMuzzleScreenPos(slotStart, span) {
+        var bays = [];
+        var i, bi;
+        for (i = 0; i < span; i++) {
+          bi = parkGridEl && parkGridEl.querySelector('.parkBay[data-slot="' + (slotStart + i) + '"]');
+          if (bi) bays.push(bi);
+        }
+        if (!bays.length) return null;
+        if (span === 1) {
+          bi = bays[0];
+          var muz = bi.querySelector('.parkTurretMuzzle');
+          if (muz) {
+            var mr = muz.getBoundingClientRect();
+            return { x: (mr.left + mr.right) / 2, y: (mr.top + mr.bottom) / 2 };
+          }
+        }
+        var br0 = bays[0].getBoundingClientRect();
+        var brL = bays[bays.length - 1].getBoundingClientRect();
+        return {
+          x: (br0.left + brL.right) / 2,
+          y: (br0.top + brL.top) / 2
+        };
+      }
+
+      function playHitExplosionOnCell(elCell) {
+        if (!elCell || !elCell.getBoundingClientRect) return;
+        /** 击中音效（与 svg 爆炸同步；早于 DOM 动画插入，避免 rect 异常时静音） */
+        sfxHitRhythmic();
+        var r = elCell.getBoundingClientRect();
+        var cx = (r.left + r.right) / 2;
+        var cy = (r.top + r.bottom) / 2;
+        var w = r.width * 1.5;
+        var h = r.height * 1.5;
+        var ex = document.createElement('div');
+        ex.className = 'hitExplosionFx';
+        ex.style.left = cx - w / 2 + 'px';
+        ex.style.top = cy - h / 2 + 'px';
+        ex.style.width = w + 'px';
+        ex.style.height = h + 'px';
+        var img = document.createElement('img');
+        img.className = 'hitExplosionArt';
+        img.src = 'assets/hit-explosion.svg';
+        img.alt = '';
+        img.draggable = false;
+        ex.appendChild(img);
+        document.body.appendChild(ex);
+        window.setTimeout(function () {
+          if (ex.parentNode) ex.parentNode.removeChild(ex);
+        }, 460);
+      }
+
+      /**
+       * 开火瞬间后坐力：`rotate(aimDeg)` 后再 `translateY`，沿炮管局部坐标后移（CSS 从左到右先 rotate 再 translate）。
+       * 须在已有瞄准角之后调用；与并行瞄准逻辑无关，勿改动 aimParkTurretThenShoot 的 DOM 重查与 setTimeout(0) 调度。
+       */
+      function playParkTurretRecoil(pivotEl, aimDegDeg) {
+        if (!pivotEl || typeof aimDegDeg !== 'number' || isNaN(aimDegDeg)) return;
+        var kickPx = 6;
+        var snapMs = 11;
+        var recoverMs = 42;
+        var base = 'rotate(' + aimDegDeg + 'deg)';
+        var kicked = base + ' translateY(' + kickPx + 'px)';
+        pivotEl.style.transition =
+          'transform ' + snapMs + 'ms cubic-bezier(0.34, 1.22, 0.55, 1)';
+        pivotEl.style.transform = kicked;
+        window.setTimeout(function () {
+          if (!pivotEl.parentNode) return;
+          pivotEl.style.transition =
+            'transform ' + recoverMs + 'ms cubic-bezier(0.34, 0.72, 0.24, 1)';
+          pivotEl.style.transform = base;
+        }, snapMs);
+      }
+
+      /**
+       * 屏幕坐标枪口 → 目标格中心；弹体为 assets/bullet.svg。
+       * muzzle：{ x, y } 或 null（则立即 onImpact）。
+       * bulletRotationDeg：可选；由炮塔瞄准传入时与炮管共用 pivot→目标的方位角（子弹图默认朝 +X）。
+       * parkFireSlot：可选；来自中间第几号车位的炮弹，清空车位时中止弹道且不触发 onImpact，避免「格没了还播击中」。
+       */
+      function cancelFlyingBulletsAllNoImpact() {
+        var list = document.querySelectorAll('.bulletFxShell');
+        var i, el;
+        for (i = 0; i < list.length; i++) {
+          el = list[i];
+          if (typeof el.__parkBulletAbort === 'function') el.__parkBulletAbort();
+        }
+      }
+      function cancelFlyingBulletsForParkSlots(slotStart, span) {
+        var k, sk, list, i, el;
+        for (k = 0; k < span; k++) {
+          sk = slotStart + k;
+          list = document.querySelectorAll('.bulletFxShell[data-bullet-park-slot="' + sk + '"]');
+          for (i = 0; i < list.length; i++) {
+            el = list[i];
+            if (typeof el.__parkBulletAbort === 'function') el.__parkBulletAbort();
+          }
+        }
+      }
+      function shootBulletScreen(muzzle, tr, tc, colorIdx, onImpact, bulletRotationDeg, parkFireSlot) {
+        var cell = targetGridEl.querySelector('.tgCell[data-r="' + tr + '"][data-c="' + tc + '"]');
+        if (!muzzle || cell == null) {
+          if (typeof onImpact === 'function') onImpact();
+          return;
+        }
+        var cr = cell.getBoundingClientRect();
+        var x2 = (cr.left + cr.right) / 2;
+        var y2 = (cr.top + cr.bottom) / 2;
+        var dx = x2 - muzzle.x;
+        var dy = y2 - muzzle.y;
+        var ang =
+          typeof bulletRotationDeg === 'number' && !isNaN(bulletRotationDeg)
+            ? bulletRotationDeg
+            : Math.atan2(dy, dx) * 180 / Math.PI;
+
+        var bull = document.createElement('div');
+        bull.className = 'bulletFxShell';
+        var img = document.createElement('img');
+        img.src = 'assets/bullet.svg';
+        img.alt = '';
+        bull.appendChild(img);
+        bull.classList.add('bulletFlying');
+        bull.style.left = muzzle.x + 'px';
+        bull.style.top = muzzle.y + 'px';
+        bull.style.transition = 'none';
+        bull.style.transform = 'translate(-50%, -50%) rotate(' + ang + 'deg)';
+        if (typeof parkFireSlot === 'number' && !isNaN(parkFireSlot))
+          bull.setAttribute('data-bullet-park-slot', String(parkFireSlot));
+        document.body.appendChild(bull);
+
+        var cleanupTimerId = null;
+        var finished = false;
+        function onFlyTransitionEnd(ev) {
+          if (ev.target !== bull) return;
+          if (ev.propertyName !== 'left' && ev.propertyName !== 'top') return;
+          bull.removeEventListener('transitionend', onFlyTransitionEnd);
+          finishBulletImpact(false);
+        }
+        function finishBulletImpact(fromAbort) {
+          if (finished) return;
+          finished = true;
+          if (cleanupTimerId != null) {
+            window.clearTimeout(cleanupTimerId);
+            cleanupTimerId = null;
+          }
+          bull.removeEventListener('transitionend', onFlyTransitionEnd);
+          try {
+            delete bull.__parkBulletAbort;
+          } catch (eAb) {}
+          if (bull.parentNode) bull.parentNode.removeChild(bull);
+          if (!fromAbort && typeof onImpact === 'function') onImpact();
+        }
+        bull.__parkBulletAbort = function () {
+          finishBulletImpact(true);
+        };
+
+        window.requestAnimationFrame(function () {
+          window.requestAnimationFrame(function () {
+            sfxShoot();
+            bull.style.transition = 'left ' + (BULLET_FLY_MS / 1000) + 's linear, top ' + (BULLET_FLY_MS / 1000) + 's linear';
+            bull.style.left = x2 + 'px';
+            bull.style.top = y2 + 'px';
+          });
+        });
+        bull.addEventListener('transitionend', onFlyTransitionEnd);
+        cleanupTimerId = window.setTimeout(function () {
+          finishBulletImpact(false);
+        }, BULLET_FLY_MS + BULLET_CLEANUP_EXTRA_MS);
+      }
+
+      /**
+       * 炮口默认朝上；射击前先将炮管转到目标方向（transition 时长见 PARK_TURRET_AIM_MS），再从炮口发射。
+       *
+       * 【维护要点 — 勿回归】
+       * 1) aimAndScheduleFire 内必须按 slotStart / tr / tc 重新 query bay、pivot、cell（多车位并行时 renderTarget 会重建目标格 DOM）。
+       * 2) 调度瞄准时用 setTimeout(aimAndScheduleFire, 0)，勿改回双层 requestAnimationFrame（同帧排队过深会导致部分槽位瞄准不执行）。
+       * 3) 瞄准期间 pause .parkTurretWrap idle；clear / 发射完毕 resume（见 resumeParkTurretIdleForSlot）。
+       * 4) shotDeg / aimDeg 闭包绑定本槽位；parkTurretAimTimerBySlot 按槽隔离。
+       *
+       * 瞄准瞬间暂停 .parkTurretWrap 的 idle 位移动画，避免测量原点与发射帧错位（尤其左侧车位）。
+       * aimDelayMs：可选；同一波多个底行同色目标时传入较短毫秒数以加快射速（仍为单独弹道）。
+       * parkBulletOwnerSlot：可选；写入弹道 data-bullet-park-slot，清空该车位 span 时中止飞行（与瞄准用 bay 槽 baySlot 可能不同）。
+       */
+      function aimParkTurretThenShoot(slotStart, span, tr, tc, colorIdx, onImpact, aimDelayMs, parkBulletOwnerSlot) {
+        var bulletTagSlot =
+          typeof parkBulletOwnerSlot === 'number' && !isNaN(parkBulletOwnerSlot)
+            ? parkBulletOwnerSlot
+            : slotStart;
+        /** 无预计算角度时用枪口坐标重算（勿与其它车位并行射击共用外层变量，否则 setTimeout 会读到被覆盖的角度） */
+        function fireFromMuzzleWithDeg(degOpt) {
+          shootBulletScreen(
+            getParkMuzzleScreenPos(slotStart, span),
+            tr,
+            tc,
+            colorIdx,
+            onImpact,
+            degOpt,
+            bulletTagSlot
+          );
+        }
+        if (span !== 1 || !parkGridEl || !targetGridEl) {
+          fireFromMuzzleWithDeg(undefined);
+          return;
+        }
+        var bay = parkGridEl.querySelector('.parkBay[data-slot="' + slotStart + '"]');
+        var pivot = bay && bay.querySelector('.parkTurretBarrelPivot');
+        var cell = targetGridEl.querySelector('.tgCell[data-r="' + tr + '"][data-c="' + tc + '"]');
+        if (!bay || !pivot || !cell) {
+          fireFromMuzzleWithDeg(undefined);
+          return;
+        }
+        function aimAndScheduleFire() {
+          var aimMs =
+            typeof aimDelayMs === 'number' && !isNaN(aimDelayMs) && aimDelayMs > 0
+              ? Math.max(36, Math.min(PARK_TURRET_AIM_MS, aimDelayMs))
+              : PARK_TURRET_AIM_MS;
+          /** 本槽位新一轮瞄准：取消仅针对该格的待发弹射，不影响其它中间车位 */
+          clearParkTurretAimTimerForSlot(slotStart);
+          /**
+           * 多车位并行射击时，其它格会在瞄准回调运行前/之间调用 renderTarget()，整张目标格 innerHTML 重建。
+           * 闭包里的 cell/bay/pivot 引用会变成游离节点，必须先按 tr,tc 与 slot 重新 query，否则会算错方位角。
+           */
+          var bayNow = parkGridEl.querySelector('.parkBay[data-slot="' + slotStart + '"]');
+          var pivotNow = bayNow && bayNow.querySelector('.parkTurretBarrelPivot');
+          var cellNow = targetGridEl.querySelector('.tgCell[data-r="' + tr + '"][data-c="' + tc + '"]');
+          if (!bayNow || !pivotNow || !cellNow) {
+            resumeParkTurretIdleForSlot(slotStart);
+            fireFromMuzzleWithDeg(undefined);
+            return;
+          }
+          var wrap = bayNow.querySelector('.parkTurretWrap');
+          if (wrap) wrap.style.animationPlayState = 'paused';
+          var cr = cellNow.getBoundingClientRect();
+          var tx = (cr.left + cr.right) / 2;
+          var ty = (cr.top + cr.bottom) / 2;
+          var muzEl = bayNow.querySelector('.parkTurretMuzzle');
+          if (!muzEl) {
+            resumeParkTurretIdleForSlot(slotStart);
+            fireFromMuzzleWithDeg(undefined);
+            return;
+          }
+          /**
+           * 旋转原点：transform-origin 50% 100%（底边中心）。在 rotate≠0 时不能用 pivot 包围盒推断。
+           * 做法：transition 关掉 → 瞬时归零 → getBoundingClientRect 读真实底边中心 → 再用枪口算炮管初始朝向 theta0，
+           * aimDeg = thetaT - theta0（相对旋转），避免左侧车位等 offset 链/subpixel 与「假定朝上 +90°」不一致。
+           */
+          var prevTransition = pivotNow.style.transition;
+          var prevTransform = pivotNow.style.transform;
+          pivotNow.style.transition = 'none';
+          pivotNow.style.transform = 'rotate(0deg)';
+          void pivotNow.offsetHeight;
+          var pr = pivotNow.getBoundingClientRect();
+          if (pr.width < 1 || pr.height < 1) {
+            pivotNow.style.transition = prevTransition;
+            pivotNow.style.transform = prevTransform;
+            resumeParkTurretIdleForSlot(slotStart);
+            fireFromMuzzleWithDeg(undefined);
+            return;
+          }
+          var px = (pr.left + pr.right) / 2;
+          var py = pr.bottom;
+          var mz = muzEl.getBoundingClientRect();
+          var mx = (mz.left + mz.right) / 2;
+          var my = (mz.top + mz.bottom) / 2;
+          var theta0 = Math.atan2(my - py, mx - px);
+          var thetaT = Math.atan2(ty - py, tx - px);
+          var shotDeg = (thetaT * 180) / Math.PI;
+          var aimDeg = ((thetaT - theta0) * 180) / Math.PI;
+          aimDeg -= 360 * Math.floor((aimDeg + 180) / 360);
+          var transGo =
+            prevTransition ||
+            'transform ' + aimMs + 'ms cubic-bezier(0.34, 0.72, 0.24, 1)';
+          pivotNow.style.transition = transGo;
+          pivotNow.style.transform = 'rotate(' + aimDeg + 'deg)';
+          /** 闭包绑定槽位 + shotDeg；map 仅存本格 tid，与其它车位隔离 */
+          var aimTid = window.setTimeout(function fireThisShot() {
+            if (parkTurretAimTimerBySlot[slotStart] !== aimTid) return;
+            delete parkTurretAimTimerBySlot[slotStart];
+            var bayRec =
+              parkGridEl && parkGridEl.querySelector('.parkBay[data-slot="' + slotStart + '"]');
+            var pivotRec = bayRec && bayRec.querySelector('.parkTurretBarrelPivot');
+            fireFromMuzzleWithDeg(shotDeg);
+            if (pivotRec) playParkTurretRecoil(pivotRec, aimDeg);
+            resumeParkTurretIdleForSlot(slotStart);
+          }, aimMs);
+          parkTurretAimTimerBySlot[slotStart] = aimTid;
+        }
+        /**
+         * 多车位同时 shootBulletFromPark 时每人注册两层 rAF，易在同帧排队过深；改用 setTimeout(0)
+         * 排到宏任务，避免部分槽位 aimAndScheduleFire 未运行（表现为炮口仍为 0°）。
+         */
+        window.setTimeout(aimAndScheduleFire, 0);
+      }
+
+      /** 调用方先 renderTarget；内部不再 render，以免清掉 tgAttackTarget */
+      function shootBulletFromPark(slotStart, span, tr, tc, colorIdx, onImpact, aimDelayMs, parkBulletOwnerSlot) {
+        aimParkTurretThenShoot(slotStart, span, tr, tc, colorIdx, onImpact, aimDelayMs, parkBulletOwnerSlot);
+      }
+
+      /** 与车位一致：控件矩形顶边水平中心 */
+      function getToolMuzzleScreenPos(forEliminate) {
+        var el = document.getElementById(forEliminate ? 'btnElim' : 'btnHammer');
+        if (!el) return null;
+        var r = el.getBoundingClientRect();
+        return { x: (r.left + r.right) / 2, y: r.top };
+      }
+
+      /** 收集目标格及其周围 8 格内有颜色的格子（边界内） */
+      function collectElimMoore3x3HitCells(tr, tc) {
+        var hits = [];
+        var dr, dc, rr, cc, cval;
+        for (dr = -1; dr <= 1; dr++) {
+          for (dc = -1; dc <= 1; dc++) {
+            rr = tr + dr;
+            cc = tc + dc;
+            if (rr < 0 || rr >= TR || cc < 0 || cc >= TC) continue;
+            cval = target[rr][cc];
+            if (cval < 0 || cval >= COLOR_COUNT) continue;
+            hits.push({ r: rr, c: cc, col: cval });
+          }
+        }
+        return hits;
+      }
+
+      /** 锤子：点击格及其周围两层（Chebyshev 距 ≤2，最多 5×5）内有颜色的格子 */
+      function collectHammerTwoRingHitCells(tr, tc) {
+        var hits = [];
+        var dr, dc, rr, cc, cval;
+        for (dr = -2; dr <= 2; dr++) {
+          for (dc = -2; dc <= 2; dc++) {
+            rr = tr + dr;
+            cc = tc + dc;
+            if (rr < 0 || rr >= TR || cc < 0 || cc >= TC) continue;
+            cval = target[rr][cc];
+            if (cval < 0 || cval >= COLOR_COUNT) continue;
+            hits.push({ r: rr, c: cc, col: cval });
+          }
+        }
+        return hits;
+      }
+
+      /** 消除：3×3（含点击格）；锤子：5×5（含点击格及周围两层） */
+      function onTargetGridToolPointerDown(ev) {
+        if (locked) return;
+        if (!eliminateMode && !hammerMode) return;
+        if (ev.button !== undefined && ev.button !== 0) return;
+        var cell = ev.target && ev.target.closest && ev.target.closest('.tgCell');
+        if (!cell || cell.classList.contains('empty')) return;
+        var tr = parseInt(cell.dataset.r, 10);
+        var tc = parseInt(cell.dataset.c, 10);
+        if (isNaN(tr) || isNaN(tc)) return;
+        var col = target[tr][tc];
+        if (col < 0 || col >= COLOR_COUNT) return;
+
+        var useElim = eliminateMode;
+        if (useElim && elimUses <= 0) return;
+        if (!useElim && hammerUses <= 0) return;
+
+        ev.preventDefault();
+        locked = true;
+        if (useElim) {
+          elimUses--;
+          var elLeft = document.getElementById('elimLeft');
+          if (elLeft) elLeft.textContent = String(elimUses);
+        } else {
+          hammerUses--;
+          var hLeft = document.getElementById('hammerLeft');
+          if (hLeft) hLeft.textContent = String(hammerUses);
+        }
+        eliminateMode = false;
+        hammerMode = false;
+        syncModes();
+        syncHammerBtn();
+
+        var muzzle = getToolMuzzleScreenPos(useElim);
+        var hits = useElim ? collectElimMoore3x3HitCells(tr, tc) : collectHammerTwoRingHitCells(tr, tc);
+
+        shootBulletScreen(muzzle, tr, tc, col, function () {
+          var i, h, elCell;
+          for (i = 0; i < hits.length; i++) {
+            h = hits[i];
+            elCell = targetGridEl.querySelector('.tgCell[data-r="' + h.r + '"][data-c="' + h.c + '"]');
+            if (elCell) {
+              playHitExplosionOnCell(elCell);
+              elCell.classList.add('tgEliminating');
+            }
+          }
+          window.setTimeout(function () {
+            var cleared = 0;
+            var j, hj;
+            for (j = 0; j < hits.length; j++) {
+              hj = hits[j];
+              if (target[hj.r][hj.c] === hj.col) {
+                target[hj.r][hj.c] = -1;
+                cleared++;
+              }
+            }
+            eliminatedCount += cleared;
+            applyGravityRefillWithFallAnimation(function () {
+              recomputeRemainFromTarget();
+              renderQuotaRow();
+              updateProgress();
+              wakePausedParkSlotsIfReady();
+              locked = false;
+              checkWinLose();
+            });
+          }, TG_ELIM_ANIM_MS);
+        });
+      }
+
+      function drainParkElimQueue() {
+        while (parkElimQueue.length) {
+          var job = parkElimQueue[0];
+          if (getActiveAp(job.slotStart)) break;
+          parkElimQueue.shift();
+          startParkElimSequence(job.slotStart, job.span, job.color, job.dir, job.quota, function () {
+            if (job.onParkElimFinished) job.onParkElimFinished();
+            /** 勿在此处 renderBlocksDom：飞车完成后玩家可能已开始下一块的 parkingMove 道路动画，全量重建会打掉正在进行的几何位移，把车瞬移回网格起点。入库前 fly 已 renderBlocksDom，盘面块数据在此期间不变。 */
+          });
+        }
+      }
+
+      function endParkElimSequence(apOpt) {
+        var ap = apOpt;
+        if (!ap) return;
+        var cb = typeof ap.finishCb === 'function' ? ap.finishCb : null;
+        deleteActiveAp(ap);
+        if (!anyActiveParkDelivery()) locked = false;
+        if (typeof cb === 'function') cb(true);
+        drainParkElimQueue();
+      }
+
+      function runParkElimWave(ap) {
+        if (!ap || getActiveAp(ap.slotStart) !== ap) return;
+        if (ap.remaining <= 0) {
+          clearParkBays(ap.slotStart, ap.span);
+          endParkElimSequence(ap);
+          return;
+        }
+        setParkBayWaitTapSlotRange(ap.slotStart, ap.span, false);
+
+        function fireNextBullet() {
+          if (!ap || getActiveAp(ap.slotStart) !== ap) return;
+          var cur = ap;
+          if (cur.remaining <= 0) {
+            clearParkBays(cur.slotStart, cur.span);
+            endParkElimSequence(ap);
+            return;
+          }
+          var shotColor = cur.color;
+          var hi, rc, elCell, tc;
+          /** 单车：占领每 bay 至多一发；多槽位并行时每车独立跑 fireNextBullet */
+          var rawHits = collectBottomRowSameColor(shotColor, TC);
+          var waveCap = Math.min(cur.span, cur.remaining);
+          var hits = [];
+          for (hi = 0; hi < rawHits.length && hits.length < waveCap; hi++) {
+            rc = rawHits[hi];
+            tc = rc[1];
+            if (
+              parkBottomColReserved[tc] !== undefined &&
+              parkBottomColReserved[tc] !== cur.slotStart
+            ) {
+              continue;
+            }
+            parkBottomColReserved[tc] = cur.slotStart;
+            hits.push(rc);
+          }
+          renderTarget();
+          if (!hits.length) {
+            paintParkOccupant(cur);
+            deleteActiveAp(cur);
+            parkDeliveryPausedBySlot[cur.slotStart] = cur;
+            setParkBayWaitTapSlotRange(cur.slotStart, cur.span, true);
+            if (!anyActiveParkDelivery()) locked = false;
+            scheduleParkShootPoll(cur.slotStart);
+            drainParkElimQueue();
+            return;
+          }
+          for (hi = 0; hi < hits.length; hi++) {
+            rc = hits[hi];
+            elCell = targetGridEl.querySelector('.tgCell[data-r="' + rc[0] + '"][data-c="' + rc[1] + '"]');
+            if (elCell) elCell.classList.add('tgAttackTarget');
+          }
+          var batchN = hits.length;
+          var multiBottomTargets = batchN > 1;
+          var rapidAimMs = multiBottomTargets
+            ? Math.max(40, Math.floor(PARK_TURRET_AIM_MS * 0.4))
+            : null;
+          var waveGapAfterBatch = multiBottomTargets
+            ? Math.max(8, Math.floor(BULLET_GAP_MS * 0.32))
+            : BULLET_GAP_MS;
+          var impactsLeft = batchN;
+          function afterBatchImpacts() {
+            window.setTimeout(function () {
+              if (!getActiveAp(ap.slotStart) || getActiveAp(ap.slotStart) !== ap) return;
+              var i2, tr2, tc2;
+              for (i2 = 0; i2 < hits.length; i2++) {
+                tr2 = hits[i2][0];
+                tc2 = hits[i2][1];
+                delete parkBottomColReserved[tc2];
+                if (target[tr2][tc2] === shotColor) target[tr2][tc2] = -1;
+              }
+              ap.remaining -= batchN;
+              eliminatedCount += batchN;
+              scheduleGravityCoalesced(function () {
+                if (!getActiveAp(ap.slotStart) || getActiveAp(ap.slotStart) !== ap) return;
+                recomputeRemainFromTarget();
+                renderQuotaRow();
+                updateProgress();
+                if (ap.remaining <= 0) {
+                  clearParkBays(ap.slotStart, ap.span);
+                  endParkElimSequence(ap);
+                  return;
+                }
+                paintParkOccupant(ap);
+                window.setTimeout(fireNextBullet, waveGapAfterBatch);
+              });
+            }, TG_ELIM_ANIM_MS);
+          }
+          for (hi = 0; hi < hits.length; hi++) {
+            rc = hits[hi];
+            (function (tr, tc, baySlot, staggerMs, aimQuick) {
+              window.setTimeout(function () {
+                shootBulletFromPark(
+                  baySlot,
+                  1,
+                  tr,
+                  tc,
+                  shotColor,
+                  function () {
+                    if (!getActiveAp(ap.slotStart) || getActiveAp(ap.slotStart) !== ap) return;
+                    elCell = targetGridEl.querySelector('.tgCell[data-r="' + tr + '"][data-c="' + tc + '"]');
+                    if (elCell) {
+                      elCell.classList.remove('tgAttackTarget');
+                      playHitExplosionOnCell(elCell);
+                      elCell.classList.add('tgEliminating');
+                    }
+                    impactsLeft--;
+                    if (impactsLeft <= 0) afterBatchImpacts();
+                  },
+                  aimQuick,
+                  cur.slotStart
+                );
+              }, staggerMs);
+            })(
+              rc[0],
+              rc[1],
+              cur.slotStart + hi,
+              multiBottomTargets ? hi * 16 : 0,
+              rapidAimMs
+            );
+          }
+        }
+
+        fireNextBullet();
+      }
+
+      function startParkElimSequence(slotStart, span, color, dir, quota, finishCb) {
+        var ap = {
+          slotStart: slotStart,
+          span: span,
+          color: color,
+          dir: dir,
+          remaining: Math.max(0, quota),
+          finishCb: typeof finishCb === 'function' ? finishCb : null
+        };
+        setActiveAp(ap);
+        window.setTimeout(function () {
+          runParkElimWave(ap);
+        }, PARK_TO_ELIM_MS);
+      }
+
+      function onParkGridTap(ev) {
+        if (locked) return;
+        var bay = ev.target.closest('.parkBay-occupied.parkBay-waitTap');
+        if (!bay) return;
+        var slot = parseInt(bay.dataset.slot, 10);
+        if (isNaN(slot)) return;
+        var ap = parkDeliveryPausedBySlot[slot];
+        if (!ap || ap.remaining <= 0) return;
+        ev.preventDefault();
+        sfxUiSoft();
+        clearParkShootPoll(slot);
+        delete parkDeliveryPausedBySlot[slot];
+        setActiveAp(ap);
+        runParkElimWave(ap);
+      }
+
+      /** 由存档 parkSlotExpand 决定解锁几格（2～8），广告每次 +1 */
+      function syncParkSlotCountFromState() {
+        state.parkSlotExpand = Math.max(0, Math.min(MAX_PARK_SLOTS - 2, state.parkSlotExpand | 0));
+        parkSlotCount = Math.min(MAX_PARK_SLOTS, Math.max(2, 2 + state.parkSlotExpand));
+      }
+
+      /** 始终 8 列网格，单格尺寸与原先满 8 格时一致；超出解锁数的格显示锁定占位 */
+      function applyParkSlotLockVisual() {
+        if (!parkGridEl) return;
+        var i, bay;
+        for (i = 0; i < MAX_PARK_SLOTS; i++) {
+          bay = parkGridEl.querySelector('.parkBay[data-slot="' + i + '"]');
+          if (!bay) continue;
+          if (i < parkSlotCount) bay.classList.remove('parkBay-locked');
+          else bay.classList.add('parkBay-locked');
+        }
+      }
+
+      function buildParkGrid() {
+        if (!parkGridEl) return;
+        parkGridEl.innerHTML = '';
+        parkGridEl.style.gridTemplateColumns = 'repeat(8, minmax(0, 1fr))';
+        var i, bay;
+        for (i = 0; i < MAX_PARK_SLOTS; i++) {
+          bay = document.createElement('div');
+          bay.className = 'parkBay';
+          bay.dataset.slot = String(i);
+          parkGridEl.appendChild(bay);
+        }
+        applyParkSlotLockVisual();
+      }
+
+      function setParkDestGlow(slotStart, w, on) {
+        var k, bay;
+        for (k = 0; k < w; k++) {
+          bay = parkGridEl && parkGridEl.querySelector('.parkBay[data-slot="' + (slotStart + k) + '"]');
+          if (bay) {
+            if (on) bay.classList.add('destGlow');
+            else bay.classList.remove('destGlow');
+          }
+        }
+      }
+
+      function renderQuotaRow() {
+        if (!quotaRowEl) return;
+        quotaRowEl.innerHTML = '';
+        var adBtn = document.createElement('button');
+        adBtn.type = 'button';
+        adBtn.className = 'slotAd';
+        var maxEx = MAX_PARK_SLOTS - 2;
+        var atMax = state.parkSlotExpand >= maxEx;
+        adBtn.innerHTML = atMax ? '车位已满' : '+1 📺';
+        adBtn.title = atMax
+          ? '停车位已满（8 格）'
+          : '激励广告：解锁 1 个停车位（单格大小不变，最多 8 格）';
+        adBtn.id = 'btnInlineAdSlot';
+        adBtn.disabled = atMax;
+        quotaRowEl.appendChild(adBtn);
+        adBtn.addEventListener('click', function () {
+          if (adBtn.disabled) return;
+          document.getElementById('btnAdSlot').click();
+        });
+        var rowAdSlot = document.getElementById('btnAdSlot');
+        if (rowAdSlot) rowAdSlot.disabled = atMax;
+      }
+
+      function clearOcc() {
+        occ = [];
+        var r, c;
+        for (r = 0; r < BR; r++) {
+          var row = [];
+          for (c = 0; c < BC; c++) row.push(-1);
+          occ.push(row);
+        }
+      }
+
+      function stampOcc(bid, clearFirst) {
+        var b = blocks[bid];
+        if (!b || b.gone) return;
+        var r, c;
+        if (clearFirst) {
+          for (r = 0; r < BR; r++) {
+            for (c = 0; c < BC; c++) {
+              if (occ[r][c] === bid) occ[r][c] = -1;
+            }
+          }
+        }
+        for (r = b.r; r < b.r + b.h; r++) {
+          for (c = b.c; c < b.c + b.w; c++) {
+            if (r >= 0 && r < BR && c >= 0 && c < BC) occ[r][c] = bid;
+          }
+        }
+      }
+
+      function rebuildOcc() {
+        clearOcc();
+        var i;
+        for (i = 0; i < blocks.length; i++) {
+          if (!blocks[i].gone) stampOcc(i, false);
+        }
+      }
+
+      function stampsClearBidOnOcc(o, bid) {
+        var r, c;
+        for (r = 0; r < BR; r++) {
+          for (c = 0; c < BC; c++) {
+            if (o[r][c] === bid) o[r][c] = -1;
+          }
+        }
+      }
+
+      function stampsPlaceBidOnOcc(o, bid, r0, c0) {
+        var b = blocks[bid];
+        var r, c;
+        for (r = r0; r < r0 + b.h; r++) {
+          for (c = c0; c < c0 + b.w; c++) {
+            if (r >= 0 && r < BR && c >= 0 && c < BC) o[r][c] = bid;
+          }
+        }
+      }
+
+      function overlapsOtherInBoardOcc(o, bid, r0, c0) {
+        var b = blocks[bid];
+        var r, c, id;
+        for (r = r0; r < r0 + b.h; r++) {
+          for (c = c0; c < c0 + b.w; c++) {
+            if (r < 0 || r >= BR || c < 0 || c >= BC) continue;
+            id = o[r][c];
+            if (id >= 0 && id !== bid) return true;
+          }
+        }
+        return false;
+      }
+
+      function rectOverlapsOtherOcc(o, r0, c0, h, w) {
+        var r, c, id;
+        for (r = r0; r < r0 + h; r++) {
+          for (c = c0; c < c0 + w; c++) {
+            if (r < 0 || r >= BR || c < 0 || c >= BC) continue;
+            id = o[r][c];
+            if (id >= 0) return true;
+          }
+        }
+        return false;
+      }
+
+      /** 假想块不占 occ，沿 dir 能否-only 停车位直行后踏上道路（与 simulate 停车位阶段一致） */
+      function ghostSlideCanReachRoad(r, c, h, w, dir, occ) {
+        if (footprintTouchesRoad(r, c, h, w)) return true;
+        var dr = DIR_VEC[dir][0];
+        var dc = DIR_VEC[dir][1];
+        var cr = r;
+        var cc = c;
+        var guard = 0;
+        while (guard++ < BR * BC + 16) {
+          var nr = cr + dr;
+          var nc = cc + dc;
+          if (!rectBoardIntersect(nr, nc, h, w)) return false;
+          if (rectOverlapsOtherOcc(occ, nr, nc, h, w)) return false;
+          if (footprintTouchesRoad(nr, nc, h, w)) return true;
+          if (footprintAllParkingCells(nr, nc, h, w)) {
+            cr = nr;
+            cc = nc;
+            continue;
+          }
+          return false;
+        }
+        return false;
+      }
+
+      function shuffleSmall(arr, rng) {
+        var a = arr.slice();
+        var i, j, t;
+        for (i = a.length - 1; i > 0; i--) {
+          j = Math.floor(rng() * (i + 1));
+          t = a[i];
+          a[i] = a[j];
+          a[j] = t;
+        }
+        return a;
+      }
+
+      /** 箭头只与长边平行：横条仅左右，竖条仅上下，正方形随机选一轴 */
+      function dirsParallelToLongEdge(h, w, rng) {
+        if (w > h) return shuffleSmall([1, 3], rng);
+        if (h > w) return shuffleSmall([0, 2], rng);
+        return rng() < 0.5 ? shuffleSmall([0, 2], rng) : shuffleSmall([1, 3], rng);
+      }
+
+      function pickEscapingDir(r, c, h, w, occ, rng) {
+        var cand = dirsParallelToLongEdge(h, w, rng);
+        var i;
+        for (i = 0; i < cand.length; i++) {
+          if (ghostSlideCanReachRoad(r, c, h, w, cand[i], occ)) return cand[i];
+        }
+        return -1;
+      }
+
+      /** 贪心：反复驶离任意一辆可出站的车；若能清空则布局可解（避免开局死锁） */
+      function parkGreedySolvable() {
+        var n = blocks.length;
+        if (n === 0) return true;
+        var taken = [];
+        var k;
+        for (k = 0; k < n; k++) taken[k] = false;
+        var rounds = 0;
+        var maxRounds = n * n + 8;
+        while (rounds++ < maxRounds) {
+          var left = 0;
+          for (k = 0; k < n; k++) if (!taken[k]) left++;
+          if (left === 0) return true;
+          var pick = -1;
+          var bid;
+          for (bid = 0; bid < n; bid++) {
+            if (taken[bid]) continue;
+            for (k = 0; k < n; k++) blocks[k].gone = taken[k];
+            rebuildOcc();
+            if (simulateArrowPath(bid).escaped) {
+              pick = bid;
+              break;
+            }
+          }
+          for (k = 0; k < n; k++) blocks[k].gone = false;
+          rebuildOcc();
+          if (pick < 0) return false;
+          taken[pick] = true;
+        }
+        return false;
+      }
+
+      function findBlockerBidAt(o, bid, nr, nc, b) {
+        var r, c, id;
+        for (r = nr; r < nr + b.h; r++) {
+          for (c = nc; c < nc + b.w; c++) {
+            if (r < 0 || r >= BR || c < 0 || c >= BC) continue;
+            id = o[r][c];
+            if (id >= 0 && id !== bid) return id;
+          }
+        }
+        return -1;
+      }
+
+      function simulateArrowPath(bid) {
+        var b = blocks[bid];
+        if (!b || b.gone) {
+          return { escaped: false, reachedRoad: false, path: [], finalR: 0, finalC: 0, blockerBid: -1, blockedNr: 0, blockedNc: 0, interiorWall: false };
+        }
+        rebuildOcc();
+        var o = [];
+        var r, c;
+        for (r = 0; r < BR; r++) o.push(occ[r].slice());
+        var dr = DIR_VEC[b.dir][0];
+        var dc = DIR_VEC[b.dir][1];
+        var cr = b.r;
+        var cc = b.c;
+        var path = [ [cr, cc] ];
+        while (true) {
+          stampsClearBidOnOcc(o, bid);
+          var nr = cr + dr;
+          var nc = cc + dc;
+          if (overlapsOtherInBoardOcc(o, bid, nr, nc)) {
+            var blockerBid = findBlockerBidAt(o, bid, nr, nc, b);
+            stampsPlaceBidOnOcc(o, bid, cr, cc);
+            return {
+              escaped: false,
+              reachedRoad: false,
+              path: path,
+              finalR: cr,
+              finalC: cc,
+              blockerBid: blockerBid,
+              blockedNr: nr,
+              blockedNc: nc,
+              interiorWall: false
+            };
+          }
+          if (!rectBoardIntersect(nr, nc, b.h, b.w)) {
+            stampsPlaceBidOnOcc(o, bid, cr, cc);
+            return {
+              escaped: false,
+              reachedRoad: false,
+              path: path,
+              finalR: cr,
+              finalC: cc,
+              blockerBid: -1,
+              blockedNr: nr,
+              blockedNc: nc,
+              interiorWall: true
+            };
+          }
+          var touchesRd = footprintTouchesRoad(nr, nc, b.h, b.w);
+          var allPark = footprintAllParkingCells(nr, nc, b.h, b.w);
+          if (allPark) {
+            stampsPlaceBidOnOcc(o, bid, nr, nc);
+            cr = nr;
+            cc = nc;
+            path.push([cr, cc]);
+            continue;
+          }
+          if (touchesRd) {
+            stampsPlaceBidOnOcc(o, bid, nr, nc);
+            cr = nr;
+            cc = nc;
+            path.push([cr, cc]);
+            return {
+              escaped: true,
+              reachedRoad: true,
+              path: path,
+              finalR: cr,
+              finalC: cc,
+              blockerBid: -1,
+              blockedNr: nr,
+              blockedNc: nc,
+              interiorWall: false
+            };
+          }
+          stampsPlaceBidOnOcc(o, bid, cr, cc);
+          return {
+            escaped: false,
+            reachedRoad: false,
+            path: path,
+            finalR: cr,
+            finalC: cc,
+            blockerBid: -1,
+            blockedNr: nr,
+            blockedNc: nc,
+            interiorWall: true
+          };
+        }
+      }
+
+      function spawnCollisionSpark(screenX, screenY) {
+        var sp = document.createElement('div');
+        sp.className = 'collisionSpark';
+        sp.style.left = screenX + 'px';
+        sp.style.top = screenY + 'px';
+        document.body.appendChild(sp);
+        window.setTimeout(function () {
+          if (sp.parentNode) sp.parentNode.removeChild(sp);
+        }, 210);
+      }
+
+      function midpointBetweenElements(elA, elB) {
+        if (!elA || !elB) return null;
+        var a = elA.getBoundingClientRect();
+        var b = elB.getBoundingClientRect();
+        return {
+          x: ((a.left + a.right) / 2 + (b.left + b.right) / 2) / 2,
+          y: ((a.top + a.bottom) / 2 + (b.top + b.bottom) / 2) / 2
+        };
+      }
+
+      function bumpTowardDirThenRevert(el, dir, pxAmt, then) {
+        if (!el) {
+          if (then) then();
+          return;
+        }
+        var dv = DIR_VEC[dir];
+        var dx = dv[1] * pxAmt;
+        var dy = dv[0] * pxAmt;
+        el.classList.add('bumpHit');
+        el.style.transition = 'transform 0.04s ease-out';
+        el.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
+        window.setTimeout(function () {
+          el.style.transition = 'transform 0.07s cubic-bezier(0.34, 1.35, 0.52, 1)';
+          el.style.transform = 'translate(0,0)';
+          window.setTimeout(function () {
+            el.classList.remove('bumpHit');
+            el.style.transition = '';
+            el.style.transform = '';
+            if (then) then();
+          }, 80);
+        }, 48);
+      }
+
+      function playImmediateBlockCollision(bid, blockerBid, dir, done) {
+        var el = blockEl(bid);
+        var bel = blockerBid >= 0 ? blockEl(blockerBid) : null;
+        var mid = midpointBetweenElements(el, bel);
+        if (mid) spawnCollisionSpark(mid.x, mid.y);
+        sfxBump();
+        bumpTowardDirThenRevert(el, dir, BUMP_PX, function () {
+          if (bel) {
+            bel.classList.add('parkFail');
+            window.setTimeout(function () { bel.classList.remove('parkFail'); }, 110);
+          }
+          if (done) done();
+        });
+      }
+
+      function playSlideBlockedCollisionThenRevert(bid, sim, el, onDone) {
+        var b = blocks[bid];
+        if (!b || b.gone) {
+          if (onDone) onDone(false);
+          return;
+        }
+        var blockerBid = sim.blockerBid;
+        var dir = b.dir;
+        var path = sim.path;
+        var r0 = path[0][0], c0 = path[0][1];
+        var r1 = path[path.length - 1][0], c1 = path[path.length - 1][1];
+
+        function atCrashSite(cb) {
+          rebuildOcc();
+          syncArrowBlockDomFromModel(bid);
+          if (blockerBid >= 0) syncArrowBlockDomFromModel(blockerBid);
+          var moverEl = blockEl(bid);
+          var bel = blockerBid >= 0 ? blockEl(blockerBid) : null;
+          var mid = midpointBetweenElements(moverEl, bel);
+          if (mid) spawnCollisionSpark(mid.x, mid.y);
+          sfxBump();
+          bumpTowardDirThenRevert(moverEl, dir, BUMP_PX * 0.85, function () {
+            if (bel) {
+              bel.style.transition = 'transform 0.05s ease-out';
+              var bd = DIR_VEC[dir];
+              bel.style.transform = 'translate(' + (-bd[1] * 5) + 'px,' + (-bd[0] * 5) + 'px)';
+              window.setTimeout(function () {
+                bel.style.transition = 'transform 0.06s ease-out';
+                bel.style.transform = '';
+                window.setTimeout(function () {
+                  bel.style.transition = '';
+                  if (cb) cb();
+                }, 65);
+              }, 50);
+            } else if (cb) cb();
+          });
+        }
+
+        if (el) el.classList.add('parkingMove');
+        animateBlockParkingSeg(bid, r0, c0, r1, c1, dir, function () {
+          atCrashSite(function () {
+            var backDir = (dir + 2) % 4;
+            animateBlockParkingSeg(bid, r1, c1, r0, c0, backDir, function () {
+              var hel = blockEl(bid);
+              if (hel) hel.classList.remove('parkingMove');
+              if (onDone) onDone(false);
+            }, true);
+          });
+        }, false);
+      }
+
+      /** 优先占用左侧空位：从左向右找第一段连续 w 个未占用的槽；全无空位时返回 -1 */
+      function pickFreeSlotSpan(pref, w) {
+        var s, t, ok;
+        if (w > parkSlotCount) return -1;
+        for (s = 0; s <= parkSlotCount - w; s++) {
+          ok = true;
+          for (t = 0; t < w; t++) {
+            if (slotFilled[s + t]) {
+              ok = false;
+              break;
+            }
+          }
+          if (ok) return s;
+        }
+        return -1;
+      }
+
+      function playfieldMetrics() {
+        var W = playfieldEl.clientWidth;
+        if (!W) W = 320;
+        var lane = Math.max(8, Math.round(W / (BC + 2)));
+        var innerW = (W - 2 * lane) / BC;
+        var innerH = innerW;
+        var H = 2 * lane + BR * innerH;
+        return { W: W, H: H, lane: lane, innerW: innerW, innerH: innerH };
+      }
+
+      /**
+       * 四周灰色车道几何（与 appendParkingUnderlay 一致）：宽度均为 lane，中心线为 mt/mb/ml/mr。
+       */
+      function grayRoadLaneMetrics(m) {
+        var W = m.W, H = m.H, lane = m.lane;
+        var vLeg = Math.max(0, H - 2 * lane);
+        return {
+          lane: lane,
+          W: W,
+          H: H,
+          mt: lane / 2,
+          mb: H - lane / 2,
+          ml: lane / 2,
+          mr: W - lane / 2,
+          top: { left: 0, top: 0, width: W, height: lane },
+          bottom: { left: 0, top: H - lane, width: W, height: lane },
+          left: { left: 0, top: lane, width: lane, height: vLeg },
+          right: { left: W - lane, top: lane, width: lane, height: vLeg },
+          innerLeft: lane,
+          innerTop: lane,
+          innerRight: W - lane,
+          innerBottom: H - lane
+        };
+      }
+
+      /** 点是否落在四条灰道之一的几何中心线上，或顶边整条灰带高度内（含下移对准停车格的竖移段） */
+      function pointOnRoadCenterline(cx, cy, rm) {
+        var eps = 1.5;
+        if (Math.abs(cy - rm.mt) <= eps && cx >= -eps && cx <= rm.W + eps) return true;
+        if (Math.abs(cy - rm.mb) <= eps && cx >= -eps && cx <= rm.W + eps) return true;
+        if (Math.abs(cx - rm.ml) <= eps && cy >= rm.mt - eps && cy <= rm.mb + eps) return true;
+        if (Math.abs(cx - rm.mr) <= eps && cy >= rm.mt - eps && cy <= rm.mb + eps) return true;
+        if (cy >= -eps && cy <= rm.lane + eps && cx >= -eps && cx <= rm.W + eps) return true;
+        return false;
+      }
+
+      function layoutPlayfieldHeight() {
+        var m = playfieldMetrics();
+        playfieldEl.style.height = m.H + 'px';
+      }
+
+      function blockPixelSize(b) {
+        var m = playfieldMetrics();
+        var g = CELL_PAD * 2;
+        return { bw: b.w * m.innerW - g, bh: b.h * m.innerH - g };
+      }
+
+      function positionBlockEl(el, b) {
+        var m = playfieldMetrics();
+        var sz = blockPixelSize(b);
+        el.style.left = (m.lane + b.c * m.innerW + CELL_PAD) + 'px';
+        el.style.top = (m.lane + b.r * m.innerH + CELL_PAD) + 'px';
+        el.style.width = sz.bw + 'px';
+        el.style.height = sz.bh + 'px';
+      }
+
+      /** 仅同步单个块的 DOM（含箭头），不整盘 innerHTML，避免其它格因全量重建瞬移回旧坐标 */
+      function syncArrowBlockDomFromModel(bid) {
+        var b = blocks[bid];
+        var el = blockEl(bid);
+        if (!b || b.gone || !el) return;
+        el.style.transition = 'none';
+        el.style.transform = '';
+        positionBlockEl(el, b);
+        applyArrowDirToEl(el, b.dir);
+        var g = el.querySelector('.arrowGlyph');
+        if (g) g.textContent = ARROW_CHAR[b.dir];
+      }
+
+      function travelDimsForBlock(b, m, travelDir) {
+        var g = CELL_PAD * 2;
+        var maxG = Math.max(b.w, b.h);
+        var minG = Math.min(b.w, b.h);
+        if (travelDir < 0 || b.w === b.h) {
+          return { vw: b.w * m.innerW - g, vh: b.h * m.innerH - g };
+        }
+        var horiz = travelDir === 1 || travelDir === 3;
+        if (horiz) {
+          return { vw: maxG * m.innerW - g, vh: minG * m.innerH - g };
+        }
+        return { vw: minG * m.innerW - g, vh: maxG * m.innerH - g };
+      }
+
+      function blockCenterPx(fr, fc, bw, bh, m) {
+        var iw = m.innerW, ih = m.innerH, lane = m.lane;
+        return {
+          cx: lane + fc * iw + (bw * iw) / 2,
+          cy: lane + fr * ih + (bh * ih) / 2
+        };
+      }
+
+      /**
+       * 停车位内平移：车身宽高调成与 travelDir 一致，箭头与行驶方向一致。
+       * reparkDom=false 时不调用 positionBlockEl（用于多段衔接）；默认 true。
+       */
+      function animateBlockParkingSeg(bid, fromR, fromC, toR, toC, travelDir, then, reparkDom) {
+        var b = blocks[bid];
+        var el = blockEl(bid);
+        if (!b || b.gone || !el) {
+          if (then) then();
+          return;
+        }
+        var m = playfieldMetrics();
+        var dim = travelDimsForBlock(b, m, travelDir);
+        var vw = dim.vw, vh = dim.vh;
+        var p0 = blockCenterPx(fromR, fromC, b.w, b.h, m);
+        var p1 = blockCenterPx(toR, toC, b.w, b.h, m);
+        var x0 = p0.cx - vw / 2;
+        var y0 = p0.cy - vh / 2;
+        var x1 = p1.cx - vw / 2;
+        var y1 = p1.cy - vh / 2;
+        var dx = x1 - x0;
+        var dy = y1 - y0;
+        var dist = Math.sqrt(dx * dx + dy * dy);
+        var dur = Math.max(PARK_SLIDE_MIN_MS, dist / PARK_SLIDE_PX_PER_MS);
+        applyArrowDirToEl(el, travelDir);
+        el.classList.add('parkingMove');
+        el.style.transition = 'none';
+        el.style.transform = '';
+        el.style.width = vw + 'px';
+        el.style.height = vh + 'px';
+        el.style.left = x0 + 'px';
+        el.style.top = y0 + 'px';
+        el.offsetHeight;
+        var finished = false;
+        function cleanup() {
+          if (finished) return;
+          finished = true;
+          el.removeEventListener('transitionend', onTe);
+          window.clearTimeout(fallbackTimer);
+          b.r = toR;
+          b.c = toC;
+          rebuildOcc();
+          el.style.transition = 'none';
+          el.style.transform = '';
+          if (reparkDom !== false) positionBlockEl(el, b);
+          if (then) then();
+        }
+        function onTe(ev) {
+          if (ev.target !== el) return;
+          if (ev.propertyName !== 'left' && ev.propertyName !== 'top') return;
+          cleanup();
+        }
+        el.addEventListener('transitionend', onTe);
+        var fallbackTimer = window.setTimeout(cleanup, dur + PARK_SLIDE_FALLBACK_EXTRA_MS);
+        window.requestAnimationFrame(function () {
+          window.requestAnimationFrame(function () {
+            var durS = (dur / 1000).toFixed(4) + 's';
+            el.style.transition = 'left ' + durS + ' linear, top ' + durS + ' linear';
+            el.style.left = x1 + 'px';
+            el.style.top = y1 + 'px';
+          });
+        });
+      }
+
+      function gridStepToDir(dr, dc) {
+        if (dr === -1 && dc === 0) return 0;
+        if (dr === 1 && dc === 0) return 2;
+        if (dr === 0 && dc === 1) return 1;
+        if (dr === 0 && dc === -1) return 3;
+        return -1;
+      }
+
+      function runParkingPathChain(bid, pathCells, stepIdx, then) {
+        if (!pathCells || pathCells.length < 2 || stepIdx >= pathCells.length - 1) {
+          if (then) then();
+          return;
+        }
+        var b = blocks[bid];
+        var a = pathCells[stepIdx];
+        var dest = pathCells[stepIdx + 1];
+        var travelDir = gridStepToDir(dest[0] - a[0], dest[1] - a[1]);
+        if (travelDir < 0) travelDir = b && !b.gone ? b.dir : 0;
+        var reparkLast = stepIdx === pathCells.length - 2;
+        animateBlockParkingSeg(bid, a[0], a[1], dest[0], dest[1], travelDir, function () {
+          runParkingPathChain(bid, pathCells, stepIdx + 1, then);
+        }, reparkLast);
+      }
+
+      function applyArrowDirToEl(el, dirIdx) {
+        var g = el.querySelector('.arrowGlyph');
+        if (g) g.textContent = ARROW_CHAR[dirIdx];
+        el.dataset.dir = String(dirIdx);
+      }
+
+      function segmentDeltaToDir(dx, dy) {
+        if (Math.abs(dx) < 0.25 && Math.abs(dy) < 0.25) return -1;
+        if (Math.abs(dx) >= Math.abs(dy)) return dx > 0 ? 1 : 3;
+        return dy > 0 ? 2 : 0;
+      }
+
+      function escapeExitDirFromSim(sim, b) {
+        var p = sim.path;
+        if (p.length >= 2) {
+          var z = p[p.length - 1], a = p[p.length - 2];
+          var dr = z[0] - a[0], dc = z[1] - a[1];
+          if (dr === -1 && dc === 0) return 0;
+          if (dr === 1 && dc === 0) return 2;
+          if (dr === 0 && dc === 1) return 1;
+          if (dr === 0 && dc === -1) return 3;
+        }
+        return b.dir;
+      }
+
+      function pushPathVtx(arr, cx, cy) {
+        var last = arr[arr.length - 1];
+        if (last && Math.abs(last.cx - cx) < 0.08 && Math.abs(last.cy - cy) < 0.08) return;
+        arr.push({ cx: cx, cy: cy });
+      }
+
+      /**
+       * 已在底边道路中心线 (joinX, mb)。先比较到左右竖道中心线 ml / mr 的水平距离，走较近的一侧拐角；
+       * 再沿该竖道到顶边 mt，最后横移到目标列 tcx。仅轴对齐段。
+       */
+      function appendRingBottomToSlotTop(pts, joinX, tcx, ml, mr, mt, mb) {
+        var distLeft = joinX - ml;
+        var distRight = mr - joinX;
+        var useLeft = distLeft <= distRight;
+        if (useLeft) {
+          pushPathVtx(pts, ml, mb);
+          pushPathVtx(pts, ml, mt);
+          pushPathVtx(pts, tcx, mt);
+        } else {
+          pushPathVtx(pts, mr, mb);
+          pushPathVtx(pts, mr, mt);
+          pushPathVtx(pts, tcx, mt);
+        }
+      }
+
+      /**
+       * 停车场 → 外圈灰道中心线 → 拐角仅直角。
+       * 向左/右出库：先水平移到左侧/右侧竖道几何中心线 ml/mr（与当前车身 cy 对齐），再竖直向上到顶边 mt，最后横移到车位列 tcx；不绕底边 mb。
+       */
+      function computeRoadDeliveryCenters(fr, fc, bw, bh, slotStart, exitDir) {
+        var m = playfieldMetrics();
+        var rm = grayRoadLaneMetrics(m);
+        var iw = m.innerW, ih = m.innerH, lane = m.lane;
+        var cx = lane + fc * iw + (bw * iw) / 2;
+        var cy = lane + fr * ih + (bh * ih) / 2;
+        var col = Math.max(0, Math.min(BC - 1, slotStart));
+        var tcx = lane + (col + 0.5) * iw;
+        var mt = rm.mt;
+        var mb = rm.mb;
+        var ml = rm.ml;
+        var mr = rm.mr;
+        var pts = [];
+        pushPathVtx(pts, cx, cy);
+        if (exitDir === 0) {
+          if (cy > mt + 0.12) pushPathVtx(pts, cx, mt);
+          else pts[pts.length - 1] = { cx: cx, cy: mt };
+          if (Math.abs(cx - tcx) > 0.25) {
+            pushPathVtx(pts, tcx, mt);
+            pushPathVtx(pts, tcx, lane);
+          } else {
+            pts[pts.length - 1] = { cx: tcx, cy: mt };
+          }
+        } else if (exitDir === 2) {
+          if (cy < mb - 0.12) pushPathVtx(pts, cx, mb);
+          else pts[pts.length - 1] = { cx: cx, cy: mb };
+          appendRingBottomToSlotTop(pts, cx, tcx, ml, mr, mt, mb);
+        } else if (exitDir === 1) {
+          if (cx < mr - 0.12) pushPathVtx(pts, mr, cy);
+          else pts[pts.length - 1] = { cx: mr, cy: cy };
+          pushPathVtx(pts, mr, mt);
+          pushPathVtx(pts, tcx, mt);
+        } else {
+          if (cx > ml + 0.12) pushPathVtx(pts, ml, cy);
+          else pts[pts.length - 1] = { cx: ml, cy: cy };
+          pushPathVtx(pts, ml, mt);
+          pushPathVtx(pts, tcx, mt);
+        }
+        return pts;
+      }
+
+      function animateBlockPixelPolyline(bid, centerPts, then) {
+        var b = blocks[bid];
+        var el = blockEl(bid);
+        if (!b || b.gone || !el || !centerPts || centerPts.length < 2) {
+          if (then) then();
+          return;
+        }
+        var m = playfieldMetrics();
+        var rm = grayRoadLaneMetrics(m);
+        var maxG = Math.max(b.w, b.h);
+        var minG = Math.min(b.w, b.h);
+        var g = CELL_PAD * 2;
+        var vw = b.w * m.innerW - g;
+        var vh = b.h * m.innerH - g;
+
+        function dimsForTravelNd(nd) {
+          if (nd < 0 || b.w === b.h) {
+            return { vw: b.w * m.innerW - g, vh: b.h * m.innerH - g };
+          }
+          var horiz = nd === 1 || nd === 3;
+          if (horiz) {
+            return { vw: maxG * m.innerW - g, vh: minG * m.innerH - g };
+          }
+          return { vw: minG * m.innerW - g, vh: maxG * m.innerH - g };
+        }
+
+        function applyDimsNatural(cx, cy) {
+          vw = b.w * m.innerW - g;
+          vh = b.h * m.innerH - g;
+          el.style.transition = 'none';
+          el.style.width = vw + 'px';
+          el.style.height = vh + 'px';
+          el.style.left = cx - vw / 2 + 'px';
+          el.style.top = cy - vh / 2 + 'px';
+        }
+
+        function applyDimsAt(nd, cx, cy) {
+          var dim = dimsForTravelNd(nd);
+          vw = dim.vw;
+          vh = dim.vh;
+          el.style.transition = 'none';
+          el.style.width = vw + 'px';
+          el.style.height = vh + 'px';
+          el.style.left = cx - vw / 2 + 'px';
+          el.style.top = cy - vh / 2 + 'px';
+        }
+
+        function tl(cp) {
+          return { x: cp.cx - vw / 2, y: cp.cy - vh / 2 };
+        }
+        var i = 1;
+        var ndFirst = segmentDeltaToDir(centerPts[1].cx - centerPts[0].cx, centerPts[1].cy - centerPts[0].cy);
+        var approachFirst =
+          !pointOnRoadCenterline(centerPts[0].cx, centerPts[0].cy, rm) &&
+          pointOnRoadCenterline(centerPts[1].cx, centerPts[1].cy, rm);
+        if (approachFirst) {
+          applyDimsNatural(centerPts[0].cx, centerPts[0].cy);
+        } else if (ndFirst >= 0) {
+          applyDimsAt(ndFirst, centerPts[0].cx, centerPts[0].cy);
+          applyArrowDirToEl(el, ndFirst);
+        } else {
+          el.style.transition = 'none';
+          el.style.width = vw + 'px';
+          el.style.height = vh + 'px';
+          el.style.left = centerPts[0].cx - vw / 2 + 'px';
+          el.style.top = centerPts[0].cy - vh / 2 + 'px';
+        }
+        el.classList.add('parkingMove');
+        el.offsetHeight;
+
+        function runSeg() {
+          if (i >= centerPts.length) {
+            el.style.transition = '';
+            el.style.transform = '';
+            if (then) then();
+            return;
+          }
+
+          function startSegmentMotion() {
+            var pA = centerPts[i - 1], pB = centerPts[i];
+            var nd = segmentDeltaToDir(pB.cx - pA.cx, pB.cy - pA.cy);
+            var onRoadA = pointOnRoadCenterline(pA.cx, pA.cy, rm);
+            var onRoadB = pointOnRoadCenterline(pB.cx, pB.cy, rm);
+            var approachParkingToRoad = !onRoadA && onRoadB;
+            if (approachParkingToRoad) {
+              applyDimsNatural(pA.cx, pA.cy);
+            } else if (nd >= 0) {
+              applyDimsAt(nd, pA.cx, pA.cy);
+              applyArrowDirToEl(el, nd);
+            }
+            var p0 = tl(pA);
+            var p1 = tl(pB);
+            var dist = Math.sqrt((p1.x - p0.x) * (p1.x - p0.x) + (p1.y - p0.y) * (p1.y - p0.y));
+            var dur = Math.max(PARK_SLIDE_MIN_MS, dist / PARK_SLIDE_PX_PER_MS);
+            var durS = (dur / 1000).toFixed(4) + 's';
+            var doneSeg = false;
+            function finishSeg() {
+              if (doneSeg) return;
+              doneSeg = true;
+              el.removeEventListener('transitionend', onTe);
+              window.clearTimeout(ft);
+              var pAs = centerPts[i - 1], pBs = centerPts[i];
+              var dSnap = segmentDeltaToDir(pBs.cx - pAs.cx, pBs.cy - pAs.cy);
+              if (dSnap >= 0) {
+                applyDimsAt(dSnap, pBs.cx, pBs.cy);
+                applyArrowDirToEl(el, dSnap);
+              }
+              i++;
+              runSeg();
+            }
+            function onTe(ev) {
+              if (ev.target !== el) return;
+              if (ev.propertyName !== 'left' && ev.propertyName !== 'top') return;
+              finishSeg();
+            }
+            el.style.transition = 'none';
+            el.style.transform = '';
+            el.style.left = p0.x + 'px';
+            el.style.top = p0.y + 'px';
+            el.offsetHeight;
+            el.addEventListener('transitionend', onTe);
+            var ft = window.setTimeout(finishSeg, dur + ROAD_SEGMENT_FALLBACK_EXTRA_MS);
+            window.requestAnimationFrame(function () {
+              window.requestAnimationFrame(function () {
+                el.style.transition = 'left ' + durS + ' linear, top ' + durS + ' linear';
+                el.style.left = p1.x + 'px';
+                el.style.top = p1.y + 'px';
+              });
+            });
+          }
+
+          startSegmentMotion();
+        }
+        runSeg();
+      }
+
+      function runRoadPathThenFly(bid, slotStart, sim, onFlyCommitted, onParkElimFinished) {
+        var b = blocks[bid];
+        if (!b || b.gone) {
+          flyBlockToSlot(bid, slotStart, onFlyCommitted, onParkElimFinished);
+          return;
+        }
+        var exitDir = escapeExitDirFromSim(sim, b);
+        var pts = computeRoadDeliveryCenters(b.r, b.c, b.w, b.h, slotStart, exitDir);
+        if (pts.length < 2) {
+          flyBlockToSlot(bid, slotStart, onFlyCommitted, onParkElimFinished);
+          return;
+        }
+        animateBlockPixelPolyline(bid, pts, function () {
+          flyBlockToSlot(bid, slotStart, onFlyCommitted, onParkElimFinished);
+        });
+      }
+
+      function flyBlockToSlot(bid, slotStart, onFlyCommitted, onParkElimFinished) {
+        var el = blockEl(bid);
+        var b = blocks[bid];
+        var spanW = 1;
+        function glow(on) {
+          setParkDestGlow(slotStart, spanW, on);
+        }
+        function abort(ok) {
+          glow(false);
+          if (onFlyCommitted) onFlyCommitted(!!ok);
+        }
+        if (!el || !b || b.gone) {
+          abort(false);
+          return;
+        }
+        var br = el.getBoundingClientRect();
+        var bay = parkGridEl && parkGridEl.querySelector('.parkBay[data-slot="' + slotStart + '"]');
+        if (!bay) {
+          abort(false);
+          return;
+        }
+        var tr0 = bay.getBoundingClientRect();
+
+        var vcx = (br.left + br.right) / 2;
+        var vcy = (br.top + br.bottom) / 2;
+        var bcx = (tr0.left + tr0.right) / 2;
+        var bcy = (tr0.top + tr0.bottom) / 2;
+        var fdx = bcx - vcx;
+        var fdy = bcy - vcy;
+        var faceDir = segmentDeltaToDir(fdx, fdy);
+        if (faceDir < 0) faceDir = b.dir;
+        applyArrowDirToEl(el, faceDir);
+
+        if (b.w !== b.h) {
+          var pm = playfieldMetrics();
+          var fdim = travelDimsForBlock(b, pm, faceDir);
+          var pfR = playfieldEl.getBoundingClientRect();
+          var locCx = vcx - pfR.left;
+          var locCy = vcy - pfR.top;
+          el.style.transition = 'none';
+          el.style.width = fdim.vw + 'px';
+          el.style.height = fdim.vh + 'px';
+          el.style.left = locCx - fdim.vw / 2 + 'px';
+          el.style.top = locCy - fdim.vh / 2 + 'px';
+        }
+
+        br = el.getBoundingClientRect();
+        var tox = (tr0.left + tr0.right) / 2 - br.width / 2;
+        var toy = (tr0.top + tr0.bottom) / 2 - br.height / 2;
+
+        /** 与 .parkChip 外框一致（occupied padding 2px）。长方车用 scale(sx,sy) 铺满 tw×th，避免等比缩放留白后被 chip 100% 铺满看成「第二次变大」 */
+        var PARK_CHIP_PAD = 2;
+        var chipPad2 = PARK_CHIP_PAD * 2;
+        var tw = Math.max(1, bay.clientWidth - chipPad2);
+        var th = Math.max(1, bay.clientHeight - chipPad2);
+        var bw = Math.max(br.width, 1);
+        var bh = Math.max(br.height, 1);
+        var endSx = tw / bw;
+        var endSy = th / bh;
+
+        var flyEase = 'cubic-bezier(0.22, 0.92, 0.28, 1)';
+        var flyScaleEase = 'cubic-bezier(0.34, 1.02, 0.44, 1)';
+        var flyS = (PARK_FLY_MS / 1000).toFixed(3) + 's';
+
+        var ghost = el.cloneNode(true);
+        ghost.classList.remove('parkingMove', 'parkFail');
+        /** 飞入中间格时不显示底部块的白色箭头与数字角标 */
+        var gAg = ghost.querySelector('.arrowGlyph');
+        if (gAg && gAg.parentNode) gAg.parentNode.removeChild(gAg);
+        var gEb = ghost.querySelector('.elimBadge');
+        if (gEb && gEb.parentNode) gEb.parentNode.removeChild(gEb);
+        ghost.style.position = 'fixed';
+        ghost.style.left = br.left + 'px';
+        ghost.style.top = br.top + 'px';
+        ghost.style.width = br.width + 'px';
+        ghost.style.height = br.height + 'px';
+        ghost.style.margin = '0';
+        ghost.style.zIndex = '400';
+        ghost.style.pointerEvents = 'none';
+        ghost.style.transform = 'scale(1, 1)';
+        ghost.style.transformOrigin = '50% 50%';
+        ghost.style.willChange = 'left, top, transform, filter';
+        ghost.style.filter = 'drop-shadow(0 6px 14px rgba(0, 0, 0, 0.22))';
+        ghost.style.setProperty(
+          'transition',
+          'left ' +
+            flyS +
+            ' ' +
+            flyEase +
+            ', top ' +
+            flyS +
+            ' ' +
+            flyEase +
+            ', transform ' +
+            flyS +
+            ' ' +
+            flyScaleEase +
+            ', filter ' +
+            flyS +
+            ' ease-out',
+          'important'
+        );
+        document.body.appendChild(ghost);
+        el.style.visibility = 'hidden';
+        el.style.width = '';
+        el.style.height = '';
+
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () {
+            ghost.style.left = tox + 'px';
+            ghost.style.top = toy + 'px';
+            ghost.style.transform = 'scale(' + endSx + ', ' + endSy + ')';
+            ghost.style.filter = 'drop-shadow(0 3px 8px rgba(0, 0, 0, 0.18))';
+          });
+        });
+
+        var flyCleaned = false;
+        function finishFlyIntoBay() {
+          if (flyCleaned) return;
+          flyCleaned = true;
+          ghost.removeEventListener('transitionend', onFlyTe);
+          if (ghost.parentNode) ghost.parentNode.removeChild(ghost);
+          var savedColor = b.color;
+          var savedQuota =
+            typeof b.elimQuota === 'number' ? b.elimQuota : elimShotsForFootprint(b.h, b.w);
+          var sd = el && el.dataset ? parseInt(el.dataset.dir, 10) : NaN;
+          var savedDir = !isNaN(sd) && sd >= 0 && sd <= 3 ? sd : b.dir;
+          stampOcc(bid, true);
+          b.gone = true;
+          rebuildOcc();
+          renderBlocksDom();
+          paintParkOccupant({
+            slotStart: slotStart,
+            span: spanW,
+            color: savedColor,
+            dir: savedDir,
+            remaining: savedQuota
+          });
+          parkElimQueue.push({
+            slotStart: slotStart,
+            span: spanW,
+            color: savedColor,
+            dir: savedDir,
+            quota: savedQuota,
+            onParkElimFinished: onParkElimFinished
+          });
+          drainParkElimQueue();
+          glow(false);
+          if (onFlyCommitted) onFlyCommitted(true);
+        }
+        function onFlyTe(ev) {
+          if (ev.target !== ghost) return;
+          if (ev.propertyName !== 'left' && ev.propertyName !== 'top') return;
+          finishFlyIntoBay();
+        }
+        ghost.addEventListener('transitionend', onFlyTe);
+        window.setTimeout(finishFlyIntoBay, PARK_FLY_MS + PARK_FLY_FINISH_EXTRA_MS);
+      }
+
+      function runArrowSlideDelivery(bid, onDone) {
+        var sim = simulateArrowPath(bid);
+        var el = blockEl(bid);
+        var b = blocks[bid];
+
+        if (!sim.escaped && sim.interiorWall) {
+          if (sim.path.length === 1) {
+            playImmediateBlockCollision(bid, -1, b.dir, function () {
+              if (onDone) onDone(false);
+            });
+            return;
+          }
+          if (el) el.classList.add('parkingMove');
+          var pi0 = sim.path[0];
+          var piN = sim.path[sim.path.length - 1];
+          runParkingPathChain(bid, sim.path, 0, function () {
+            b.r = sim.finalR;
+            b.c = sim.finalC;
+            rebuildOcc();
+            syncArrowBlockDomFromModel(bid);
+            var hel = blockEl(bid);
+            if (hel) hel.classList.remove('parkingMove');
+            if (onDone) onDone(false);
+          });
+          return;
+        }
+
+        if (!sim.escaped && sim.path.length === 1) {
+          playImmediateBlockCollision(bid, sim.blockerBid, b.dir, function () {
+            if (onDone) onDone(false);
+          });
+          return;
+        }
+
+        if (!sim.escaped && sim.path.length > 1) {
+          if (el) el.classList.add('parkingMove');
+          playSlideBlockedCollisionThenRevert(bid, sim, el, onDone);
+          return;
+        }
+
+        var moved = sim.path.length > 1 || sim.escaped;
+        if (!moved) {
+          if (onDone) onDone(false);
+          return;
+        }
+
+        var slotStart = 0;
+        var span = 1;
+        var pref;
+        if (sim.escaped) {
+          pref = Math.max(0, Math.min(parkSlotCount - 1, Math.round(b.c + (b.w - 1) / 2)));
+          slotStart = pickFreeSlotSpan(pref, 1);
+          if (slotStart < 0) {
+            playImmediateBlockCollision(bid, -1, b.dir, function () {
+              if (onDone) onDone(false);
+            });
+            return;
+          }
+          slotFilled[slotStart] = true;
+        }
+
+        if (el) el.classList.add('parkingMove');
+        if (sim.escaped) setParkDestGlow(slotStart, span, true);
+
+        function releaseSlots() {
+          if (!sim.escaped) return;
+          slotFilled[slotStart] = false;
+        }
+
+        function beginFlyFromFinal() {
+          b.r = sim.finalR;
+          b.c = sim.finalC;
+          rebuildOcc();
+          syncArrowBlockDomFromModel(bid);
+          runRoadPathThenFly(bid, slotStart, sim, function (ok) {
+            if (!ok) releaseSlots();
+            var hel = blockEl(bid);
+            if (hel) {
+              hel.classList.remove('parkingMove');
+              hel.style.visibility = '';
+            }
+            if (ok) stepCounter++;
+            updateProgress();
+            if (onDone) onDone(!!ok);
+          }, function () {
+            releaseSlots();
+          });
+        }
+
+        var p0 = sim.path[0];
+        var pN = sim.path[sim.path.length - 1];
+        if (p0[0] === pN[0] && p0[1] === pN[1]) {
+          beginFlyFromFinal();
+          return;
+        }
+        runParkingPathChain(bid, sim.path, 0, beginFlyFromFinal);
+      }
+
+      function renderBlocksDom() {
+        playfieldEl.innerHTML = '';
+        layoutPlayfieldHeight();
+        appendParkingUnderlay();
+        var i, b, el, g;
+        for (i = 0; i < blocks.length; i++) {
+          b = blocks[i];
+          if (b.gone) continue;
+          el = document.createElement('div');
+          el.className = 'arrowBlock c' + b.color;
+          el.dataset.bid = String(i);
+          el.dataset.color = String(b.color);
+          el.dataset.dir = String(b.dir);
+          el.dataset.elim = String(
+            typeof b.elimQuota === 'number' ? b.elimQuota : elimShotsForFootprint(b.h, b.w)
+          );
+          positionBlockEl(el, b);
+          g = document.createElement('div');
+          g.className = 'arrowGlyph';
+          g.textContent = ARROW_CHAR[b.dir];
+          el.appendChild(g);
+          var badge = document.createElement('span');
+          badge.className = 'elimBadge';
+          badge.textContent = String(
+            typeof b.elimQuota === 'number' ? b.elimQuota : elimShotsForFootprint(b.h, b.w)
+          );
+          el.appendChild(badge);
+          el.addEventListener('pointerdown', onBlockPointerDown);
+          playfieldEl.appendChild(el);
+        }
+      }
+
+      function blockEl(bid) {
+        return playfieldEl.querySelector('.arrowBlock[data-bid="' + bid + '"]');
+      }
+
+      function onBlockPointerDown(ev) {
+        if (eliminateMode || hammerMode) {
+          ev.preventDefault();
+          return;
+        }
+        if (locked) return;
+        if (ev.button !== undefined && ev.button !== 0) return;
+        ev.preventDefault();
+        var el = ev.currentTarget;
+        var bid = parseInt(el.dataset.bid, 10);
+        locked = true;
+        runArrowSlideDelivery(bid, function () {
+          locked = false;
+          checkWinLose();
+        });
+      }
+
+      function checkWinLose() {
+        if (eliminatedCount >= initialRemainSum) {
+          locked = true;
+          sfxWin();
+          var lv = state.currentLevel;
+          var earned = starsEarned(stepCounter, stepBudget);
+          var sk = String(lv);
+          if (!state.levelStars[sk] || earned > state.levelStars[sk]) state.levelStars[sk] = earned;
+          state.coins += 40 + lv * 6 + earned * 10;
+          var advanced = false;
+          if (lv < LEVEL_COUNT) {
+            if (state.maxUnlocked <= lv) state.maxUnlocked = lv + 1;
+            state.currentLevel = lv + 1;
+            advanced = true;
+          } else state.maxUnlocked = LEVEL_COUNT;
+          save();
+          window.setTimeout(function () {
+            alert('第 ' + lv + ' 关通关！评价 ' + starLabel(earned) + '\n累计消除达到本关目标（' + initialRemainSum + ' 格）。');
+            locked = false;
+            newRound(false);
+          }, 60);
+          return;
+        }
+      }
+
+      var stepCounter = 0;
+      var stepBudget = 80;
+
+      function pickDirAlongLongEdge(h, w, rng) {
+        var d = dirsParallelToLongEdge(h, w, rng);
+        return d[0];
+      }
+
+      /** 停车格射击次数：1 格车 10、2 格车 20、≥3 格 30 */
+      function elimShotsForFootprint(h, w) {
+        var a = Math.max(1, h | 0) * Math.max(1, w | 0);
+        if (a <= 1) return 10;
+        if (a === 2) return 20;
+        return 30;
+      }
+
+      /** 微调各车 elimQuota，使总射击次数 = 上方总格子数（与满分消除对齐） */
+      function rebalanceElimQuotasToTotal(blocks, targetTotal) {
+        if (!blocks.length) return targetTotal === 0;
+        var sum = 0,
+          i;
+        for (i = 0; i < blocks.length; i++) sum += blocks[i].elimQuota;
+        var delta = targetTotal - sum;
+        if (delta === 0) return true;
+        var idx = [];
+        for (i = 0; i < blocks.length; i++) idx.push(i);
+        idx.sort(function (a, b) {
+          return blocks[b].elimQuota - blocks[a].elimQuota;
+        });
+        var guard = 0;
+        while (delta !== 0 && guard++ < 60000) {
+          var progressed = false;
+          var k, ib;
+          for (k = 0; k < idx.length && delta !== 0; k++) {
+            ib = idx[k];
+            if (delta > 0) {
+              blocks[ib].elimQuota++;
+              delta--;
+              progressed = true;
+            } else if (blocks[ib].elimQuota > 1) {
+              blocks[ib].elimQuota--;
+              delta++;
+              progressed = true;
+            }
+          }
+          if (!progressed) {
+            if (delta > 0) {
+              blocks[idx[0]].elimQuota++;
+              delta--;
+            } else break;
+          }
+        }
+        return delta === 0;
+      }
+
+      /**
+       * 逆向着色：各颜色射击次数之和 = remainByColor[c]（上方该色格子数）。
+       * 前提：sum(block.elimQuota) === sum_c remainByColor[c] === TR*TC
+       * rngOpt：若提供则随机打乱尝试顺序，多次调用可提高可行解命中率
+       */
+      function assignElimColorsToBlocks(blocks, rb, colorCount, rngOpt) {
+        var need = [],
+          c;
+        for (c = 0; c < COLOR_COUNT; c++) need[c] = c < colorCount ? rb[c] | 0 : 0;
+        var sumNeed = 0;
+        for (c = 0; c < colorCount; c++) sumNeed += need[c];
+        var sumQ = 0,
+          bi;
+        for (bi = 0; bi < blocks.length; bi++) sumQ += blocks[bi].elimQuota;
+        if (sumQ !== sumNeed) return false;
+        for (bi = 0; bi < blocks.length; bi++) blocks[bi].color = 0;
+        var idxs = [];
+        for (bi = 0; bi < blocks.length; bi++) idxs.push(bi);
+        if (rngOpt) {
+          for (bi = idxs.length - 1; bi > 0; bi--) {
+            var jj = Math.floor(rngOpt() * (bi + 1));
+            var tmp = idxs[bi];
+            idxs[bi] = idxs[jj];
+            idxs[jj] = tmp;
+          }
+        } else {
+          idxs.sort(function (a, b) {
+            return blocks[b].elimQuota - blocks[a].elimQuota;
+          });
+        }
+        var used = [];
+        for (c = 0; c < COLOR_COUNT; c++) used[c] = 0;
+        var ii, i, q, bestC, bestSlack, slack;
+        for (ii = 0; ii < idxs.length; ii++) {
+          i = idxs[ii];
+          q = blocks[i].elimQuota;
+          bestC = -1;
+          bestSlack = 1000000000;
+          for (c = 0; c < colorCount; c++) {
+            if (need[c] - used[c] < q) continue;
+            slack = need[c] - used[c] - q;
+            if (slack < bestSlack) {
+              bestSlack = slack;
+              bestC = c;
+            }
+          }
+          if (bestC < 0) return false;
+          blocks[i].color = bestC;
+          used[bestC] += q;
+        }
+        for (c = 0; c < colorCount; c++) {
+          if (used[c] !== need[c]) return false;
+        }
+        return true;
+      }
+
+      /**
+       * rbRefresh：可选，刷新时用上方 remainByColor 逆向着色（盘面不变）。
+       * 不传：新开局，先铺好车并 rebalance 射数再随机着色，按射击分布生成上方格子。
+       */
+      function packBottom(lv, rbRefresh) {
+        var rng = mulberry32((lv * 2246822519 + 3266489917) >>> 0);
+        var def = getLevelDef(lv);
+        var innerCap = countInnerPlayfieldCells();
+        var targetFill = innerCap > 0 ? Math.max(3, Math.floor(innerCap * def.density)) : 0;
+        var shapesAll = [ [1, 1], [1, 2], [2, 1] ];
+        var shapesBias = [ [1, 2], [2, 1], [1, 1] ];
+        var maxRestart = 22;
+        var outer;
+        for (outer = 0; outer < maxRestart; outer++) {
+          blocks = [];
+          clearOcc();
+          var filled = 0;
+          var attempts = 0;
+          var stale = 0;
+          var fillRatio = outer * 0.03;
+          var targetEff = Math.max(4, Math.floor(targetFill * (1 - fillRatio)));
+          while (filled < targetEff && attempts < 14000 && stale < 700) {
+            attempts++;
+            var useBias = filled < targetEff * 0.42 && rng() < 0.62;
+            var shapeArr = useBias ? shapesBias : shapesAll;
+            var sh = shapeArr[randInt(rng, 0, shapeArr.length - 1)];
+            var h = sh[0];
+            var w = sh[1];
+            if (rng() < 0.48) {
+              var ts = h;
+              h = w;
+              w = ts;
+            }
+            var r = randInt(rng, 0, BR - h);
+            var c = randInt(rng, 0, BC - w);
+            var rr, cc;
+            var coll = false;
+            for (rr = r; rr < r + h; rr++) {
+              for (cc = c; cc < c + w; cc++) {
+                if (occ[rr][cc] >= 0) {
+                  coll = true;
+                  break;
+                }
+              }
+              if (coll) break;
+            }
+            if (coll || !blockIsValidParkingSpawn(r, c, h, w)) {
+              stale++;
+              continue;
+            }
+            var dirTry = pickEscapingDir(r, c, h, w, occ, rng);
+            if (dirTry < 0) {
+              stale++;
+              continue;
+            }
+            var bid = blocks.length;
+            var cellArea = h * w;
+            var elimQuota = elimShotsForFootprint(h, w);
+            blocks.push({
+              r: r,
+              c: c,
+              h: h,
+              w: w,
+              color: 0,
+              dir: dirTry,
+              gone: false,
+              elimQuota: elimQuota
+            });
+            for (rr = r; rr < r + h; rr++) {
+              for (cc = c; cc < c + w; cc++) occ[rr][cc] = bid;
+            }
+            if (!parkGreedySolvable()) {
+              blocks.pop();
+              for (rr = r; rr < r + h; rr++) {
+                for (cc = c; cc < c + w; cc++) occ[rr][cc] = -1;
+              }
+              stale++;
+              continue;
+            }
+            filled += cellArea;
+            stale = 0;
+          }
+          rebuildOcc();
+          if (!parkGreedySolvable()) continue;
+          if (!rebalanceElimQuotasToTotal(blocks, TR * TC)) continue;
+          if (rbRefresh != null) {
+            var assignOk = false;
+            var ai;
+            for (ai = 0; ai < 48; ai++) {
+              if (assignElimColorsToBlocks(blocks, rbRefresh, def.colorCount, rng)) {
+                assignOk = true;
+                break;
+              }
+            }
+            if (!assignOk) continue;
+            rebuildOcc();
+            return true;
+          }
+          var bi;
+          for (bi = 0; bi < blocks.length; bi++) {
+            blocks[bi].color = randInt(rng, 0, def.colorCount - 1);
+          }
+          var hist = [];
+          for (var hc = 0; hc < COLOR_COUNT; hc++) hist[hc] = 0;
+          for (bi = 0; bi < blocks.length; bi++) {
+            hist[blocks[bi].color] += blocks[bi].elimQuota;
+          }
+          var tbSync = buildTargetFromShotHistogram(lv, hist, def.colorCount, rng);
+          if (!tbSync) continue;
+          rebuildOcc();
+          return tbSync;
+        }
+        blocks = [];
+        clearOcc();
+        var fr = 1,
+          fc = 1;
+        if (BR > 2 && BC > 2 && blockIsValidParkingSpawn(fr, fc, 1, 1)) {
+          blocks.push({
+            r: fr,
+            c: fc,
+            h: 1,
+            w: 1,
+            color: 0,
+            dir: 0,
+            gone: false,
+            elimQuota: elimShotsForFootprint(1, 1)
+          });
+          occ[fr][fc] = 0;
+        }
+        rebuildOcc();
+        if (!parkGreedySolvable()) return rbRefresh != null ? false : null;
+        if (!rebalanceElimQuotasToTotal(blocks, TR * TC)) {
+          blocks = [];
+          clearOcc();
+          return rbRefresh != null ? false : null;
+        }
+        if (rbRefresh != null) {
+          var assignOk2 = false;
+          var aj;
+          for (aj = 0; aj < 64; aj++) {
+            if (assignElimColorsToBlocks(blocks, rbRefresh, def.colorCount, rng)) {
+              assignOk2 = true;
+              break;
+            }
+          }
+          if (!assignOk2) {
+            blocks = [];
+            clearOcc();
+            return false;
+          }
+          rebuildOcc();
+          return true;
+        }
+        var bj;
+        for (bj = 0; bj < blocks.length; bj++) {
+          blocks[bj].color = randInt(rng, 0, def.colorCount - 1);
+        }
+        var histD = [];
+        for (var hd = 0; hd < COLOR_COUNT; hd++) histD[hd] = 0;
+        for (bj = 0; bj < blocks.length; bj++) {
+          histD[blocks[bj].color] += blocks[bj].elimQuota;
+        }
+        var tbDeg = buildTargetFromShotHistogram(lv, histD, def.colorCount, rng);
+        if (!tbDeg) {
+          blocks = [];
+          clearOcc();
+          return null;
+        }
+        rebuildOcc();
+        return tbDeg;
+      }
+
+      function refreshHudLevel() {
+        var ln = document.getElementById('levelNum');
+        var n2 = document.getElementById('levelNum2');
+        var lv = String(state.currentLevel);
+        if (ln) ln.textContent = lv;
+        if (n2) n2.textContent = lv;
+        document.getElementById('levelTotal').textContent = String(LEVEL_COUNT);
+        document.getElementById('coins').textContent = String(state.coins);
+        var recorded = state.levelStars[String(state.currentLevel)] || 0;
+        var sb = document.getElementById('levelStarsBan');
+        if (sb) sb.textContent = recorded ? (' · ' + starLabel(recorded)) : '';
+      }
+
+      function syncModes() {
+        if (targetWrapEl) {
+          if (eliminateMode || hammerMode) targetWrapEl.classList.add('targetToolMode');
+          else targetWrapEl.classList.remove('targetToolMode');
+        }
+        modeTagEl.textContent = eliminateMode
+          ? '点击一格：消除自身 + 周围 8 格（消耗 1 次）'
+          : (hammerMode ? '点击上方目标格：锤子清除周围两层（最多 5×5）' : '');
+      }
+
+      function syncHammerBtn() {
+        var hb = document.getElementById('btnHammer');
+        if (hb) hb.disabled = hammerUses <= 0;
+      }
+
+      function newRound(resetTools) {
+        cancelFlyingBulletsAllNoImpact();
+        var lv = state.currentLevel;
+        var tbSync = null;
+        var tri;
+        for (tri = 0; tri < 200; tri++) {
+          tbSync = packBottom(lv);
+          if (tbSync && tbSync.grid) break;
+        }
+        if (!tbSync || !tbSync.grid) {
+          var tbF = buildTarget(lv);
+          var okp = false;
+          var qi;
+          for (qi = 0; qi < 100 && !okp; qi++) {
+            okp = packBottom(lv, tbF.remainByColor.slice());
+            if (!okp) tbF = buildTarget(lv);
+          }
+          tbSync = tbF;
+        }
+        target = tbSync.grid;
+        remainByColor = tbSync.remainByColor.slice();
+        activeColorCount = Math.max(1, Math.min(COLOR_COUNT, getLevelDef(lv).colorCount));
+        eliminatedCount = 0;
+        initialRemainSum = TR * TC;
+        stepCounter = 0;
+        stepBudget = Math.max(28, Math.round(168 - lv * 1.35));
+        syncParkSlotCountFromState();
+        if (resetTools) {
+          var tb = levelToolBudgets(lv);
+          elimUses = tb.elim;
+          hammerUses = tb.hammer;
+          refreshUses = tb.refresh;
+        }
+        eliminateMode = false;
+        hammerMode = false;
+        syncModes();
+        document.getElementById('elimLeft').textContent = String(elimUses);
+        document.getElementById('refreshLeft').textContent = String(refreshUses);
+        var hEl = document.getElementById('hammerLeft');
+        if (hEl) hEl.textContent = String(hammerUses);
+        slotFilled = [];
+        for (var sf = 0; sf < MAX_PARK_SLOTS; sf++) slotFilled.push(false);
+        activeParkBySlot = {};
+        parkBottomColReserved = {};
+        clearAllParkShootPolls();
+        parkDeliveryPausedBySlot = {};
+        parkElimQueue = [];
+        setParkWaitingTap(false);
+        buildParkGrid();
+        rebuildOcc();
+        renderTarget();
+        renderQuotaRow();
+        updateProgress();
+        refreshHudLevel();
+        syncHammerBtn();
+        layoutPlayfieldHeight();
+        renderBlocksDom();
+      }
+
+      function sfxSyncMuteBtn() {
+        var b = document.getElementById('btnSettingsSfx');
+        if (!b) return;
+        var muted = sfxIsMuted();
+        b.setAttribute('aria-pressed', muted ? 'true' : 'false');
+        if (muted) {
+          b.textContent = '🔇 关闭';
+          b.title = '点击开启音效（保存在本机）';
+        } else {
+          b.textContent = '🔊 开启';
+          b.title = '点击关闭音效（保存在本机）';
+        }
+      }
+
+      function openSettingsModal() {
+        var modal = document.getElementById('settingsModal');
+        modal.hidden = false;
+        modal.setAttribute('aria-hidden', 'false');
+        sfxSyncMuteBtn();
+      }
+      function closeSettingsModal() {
+        var modal = document.getElementById('settingsModal');
+        modal.hidden = true;
+        modal.setAttribute('aria-hidden', 'true');
+      }
+
+      document.getElementById('btnSettingsOpen').addEventListener('click', function () {
+        openSettingsModal();
+      });
+      document.getElementById('settingsModalClose').addEventListener('click', closeSettingsModal);
+      document.getElementById('settingsModalBackdrop').addEventListener('click', closeSettingsModal);
+      document.getElementById('btnSettingsSfx').addEventListener('click', function () {
+        var next = !sfxIsMuted();
+        sfxSetMuted(next);
+        if (next) sfxHardStopAll();
+        else {
+          sfxEnsureCtx();
+          sfxResumeIfNeeded();
+        }
+        sfxSyncMuteBtn();
+      });
+      sfxSyncMuteBtn();
+
+      document.getElementById('btnElim').addEventListener('click', function () {
+        if (locked || elimUses <= 0) return;
+        sfxUi();
+        eliminateMode = !eliminateMode;
+        hammerMode = false;
+        syncModes();
+      });
+      document.getElementById('btnRefresh').addEventListener('click', function () {
+        if (locked || refreshUses <= 0) return;
+        sfxUi();
+        refreshUses--;
+        document.getElementById('refreshLeft').textContent = String(refreshUses);
+        recomputeRemainFromTarget();
+        var ri,
+          ok = false;
+        for (ri = 0; ri < 120 && !ok; ri++) {
+          ok = packBottom(state.currentLevel, remainByColor.slice());
+        }
+        rebuildOcc();
+        renderBlocksDom();
+      });
+
+      function openLevelModal() {
+        sfxUi();
+        var modal = document.getElementById('levelModal');
+        var gridElModal = document.getElementById('levelGrid');
+        gridElModal.innerHTML = '';
+        var L, btn, st;
+        for (L = 1; L <= LEVEL_COUNT; L++) {
+          btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'lvBtn';
+          btn.dataset.lv = String(L);
+          st = state.levelStars[String(L)] || 0;
+          btn.innerHTML = L + '<small>' + (st ? starLabel(st) : (L <= state.maxUnlocked ? '\u00a0' : '\ud83d\udd12')) + '</small>';
+          if (L > state.maxUnlocked) btn.classList.add('lv-locked');
+          if (L === state.currentLevel) btn.classList.add('lv-current');
+          btn.addEventListener('click', function (ev) {
+            var n = parseInt(ev.currentTarget.dataset.lv, 10);
+            if (n > state.maxUnlocked) return;
+            sfxUi();
+            state.currentLevel = n;
+            save();
+            modal.hidden = true;
+            modal.setAttribute('aria-hidden', 'true');
+            newRound(true);
+          });
+          gridElModal.appendChild(btn);
+        }
+        modal.hidden = false;
+        modal.setAttribute('aria-hidden', 'false');
+      }
+
+      document.getElementById('btnLevels').addEventListener('click', openLevelModal);
+      document.getElementById('levelModalClose').addEventListener('click', function () {
+        sfxUi();
+        var modal = document.getElementById('levelModal');
+        modal.hidden = true;
+        modal.setAttribute('aria-hidden', 'true');
+      });
+      document.getElementById('levelModalBackdrop').addEventListener('click', function () {
+        document.getElementById('levelModalClose').click();
+      });
+      document.getElementById('levelPill').addEventListener('click', openLevelModal);
+
+      document.getElementById('btnNew').addEventListener('click', function () {
+        sfxUi();
+        newRound(true);
+      });
+
+      var adEl = document.getElementById('adStatus');
+      var pendingReward = null;
+      var adBusy = false;
+      function onRewardClose(d) {
+        adBusy = false;
+        document.getElementById('btnAdSlot').disabled = false;
+        var adHm = document.getElementById('btnAdHammer');
+        if (adHm) adHm.disabled = false;
+        syncHammerBtn();
+        if (!pendingReward) return;
+        var kind = pendingReward;
+        pendingReward = null;
+        var ok = d && d.success;
+        if (kind === 'slot') {
+          CrystaBoxH5Ad.setStatus(adEl, ok ? '已解锁一个停车位' : '激励未达成', ok ? 'ok' : 'err');
+          if (ok) {
+            if (state.parkSlotExpand < MAX_PARK_SLOTS - 2) {
+              state.parkSlotExpand++;
+              save();
+            }
+            syncParkSlotCountFromState();
+            applyParkSlotLockVisual();
+            renderQuotaRow();
+          }
+        } else if (kind === 'hammer') {
+          CrystaBoxH5Ad.setStatus(adEl, ok ? '锤子就绪：点击格及周围两层（5×5）' : '激励未达成', ok ? 'ok' : 'err');
+          if (ok) {
+            hammerUses += 3;
+            var hL = document.getElementById('hammerLeft');
+            if (hL) hL.textContent = String(hammerUses);
+            hammerMode = true;
+            eliminateMode = false;
+            syncModes();
+            syncHammerBtn();
+          }
+        }
+      }
+      window.addEventListener('CrystaBoxNativeAd', function (ev) {
+        if (ev && ev.detail) onRewardClose(ev.detail);
+      });
+      window.onCrystaBoxNativeAd = function (d) {
+        if (d) onRewardClose(d);
+      };
+
+      function requestAd(kind, prefix) {
+        if (adBusy) return;
+        if (!CrystaBoxH5Ad.showRewarded({ placement: 'g001', requestIdPrefix: prefix || 'g001' })) {
+          CrystaBoxH5Ad.setStatus(adEl, '无法调用广告桥（请在 App 内 WebView 打开）。', 'err');
+          return;
+        }
+        pendingReward = kind;
+        adBusy = true;
+        document.getElementById('btnAdSlot').disabled = true;
+        document.getElementById('btnHammer').disabled = true;
+        var adHm2 = document.getElementById('btnAdHammer');
+        if (adHm2) adHm2.disabled = true;
+        CrystaBoxH5Ad.setStatus(adEl, '已向宿主请求激励广告…', 'muted');
+        window.setTimeout(function () {
+          adBusy = false;
+          document.getElementById('btnAdSlot').disabled = false;
+          var adHm3 = document.getElementById('btnAdHammer');
+          if (adHm3) adHm3.disabled = false;
+          syncHammerBtn();
+        }, 120000);
+      }
+
+      document.getElementById('btnAdSlot').addEventListener('click', function () {
+        requestAd('slot', 'g001-slot');
+      });
+      document.getElementById('btnAdHammer').addEventListener('click', function () {
+        requestAd('hammer', 'g001-hammer');
+      });
+      /** 有关卡次数时用锤子；用尽可走激励（requestAd('hammer')） */
+      document.getElementById('btnHammer').addEventListener('click', function () {
+        if (locked || hammerUses <= 0) return;
+        sfxUi();
+        hammerMode = true;
+        eliminateMode = false;
+        if (typeof CrystaBoxH5Ad !== 'undefined' && CrystaBoxH5Ad.setStatus) {
+          CrystaBoxH5Ad.setStatus(adEl, '锤击模式：点击上方目标格（5×5）', 'ok');
+        }
+        syncModes();
+      });
+
+      window.addEventListener('resize', function () {
+        layoutPlayfieldHeight();
+        renderBlocksDom();
+      });
+
+      if (parkGridEl) parkGridEl.addEventListener('click', onParkGridTap);
+      if (targetGridEl) targetGridEl.addEventListener('pointerdown', onTargetGridToolPointerDown);
+
+      newRound(true);
+      /** E2E：?e2e_turret=1 时为中间 8 格各铺一座炮塔（不参与真实停车逻辑，仅用于几何自检） */
+      try {
+        if (/[?&]e2e_turret=1(?:&|$)/.test(location.search || '')) {
+          parkSlotCount = MAX_PARK_SLOTS;
+          applyParkSlotLockVisual();
+          slotFilled = [];
+          for (var e2ei = 0; e2ei < MAX_PARK_SLOTS; e2ei++) slotFilled.push(false);
+          var e2eSlot;
+          for (e2eSlot = 0; e2eSlot < MAX_PARK_SLOTS; e2eSlot++) {
+            paintParkOccupant({
+              slotStart: e2eSlot,
+              span: 1,
+              color: e2eSlot % COLOR_COUNT,
+              dir: 0,
+              remaining: 20
+            });
+          }
+          window.__parkinglotE2e = {
+            aimParkTurretThenShoot: aimParkTurretThenShoot,
+            renderTarget: renderTarget
+          };
+        }
+      } catch (eE2eTurret) {}
+    })();
+  </script>
+</body>
+</html>

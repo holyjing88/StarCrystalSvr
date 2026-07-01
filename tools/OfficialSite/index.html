@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="StarLaneInfinite Technology — SCPlayer 多媒体播放器与星澜小游戏平台，吸血鬼宿舍、最强大脑、拯救主公等精品休闲游戏。" />
+  <title>StarLaneInfinite Technology · 星澜无界科技</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="i18n.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="logo" href="/">
+        <span class="logo-en">StarLaneInfinite</span>
+        <span class="logo-zh" data-i18n="logo_sub">星澜无界科技</span>
+      </a>
+      <div class="header-right">
+        <nav>
+          <a href="#products" data-i18n="nav_products">产品</a>
+          <a href="#games" data-i18n="nav_games">游戏</a>
+          <a href="#about" data-i18n="nav_about">关于</a>
+          <a href="#contact" data-i18n="nav_contact">联系</a>
+        </nav>
+        <div class="lang-switch">
+          <span class="lang-switch-label" data-i18n="lang_label">语言</span>
+          <div class="lang-picker" id="lang-picker">
+            <button type="button" class="lang-picker-btn" id="lang-picker-btn" aria-haspopup="listbox" aria-expanded="false" aria-label="Language">
+              <span id="lang-picker-current">中文</span>
+            </button>
+            <ul class="lang-picker-menu" id="lang-picker-menu" role="listbox" hidden>
+              <li role="option" data-lang="zh" aria-selected="true">中文</li>
+              <li role="option" data-lang="en" aria-selected="false">English</li>
+              <li role="option" data-lang="ur" aria-selected="false">اردو</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="wrap hero-inner">
+        <p class="eyebrow" data-i18n="hero_eyebrow">Multimedia · Casual Games · Unity &amp; H5</p>
+        <h1 data-i18n-html="hero_title">连接内容与玩法的<br />无界体验</h1>
+        <p class="lead" data-i18n-html="hero_lead">
+          <strong>StarLaneInfinite Technology</strong>（星澜无界科技）专注多媒体播放与轻量游戏生态：
+          自研 <strong>SCPlayer</strong> 播放器与 <strong>星澜小游戏平台</strong>，持续推出吸血鬼宿舍、最强大脑、拯救主公等原创小游戏。
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#products" data-i18n="hero_btn_products">了解产品</a>
+          <a class="btn btn-ghost" href="#games" data-i18n="hero_btn_games">浏览游戏</a>
+        </div>
+      </div>
+      <div class="hero-glow" aria-hidden="true"></div>
+      <div class="hero-glow hero-glow-2" aria-hidden="true"></div>
+    </section>
+
+    <section id="products" class="section">
+      <div class="wrap">
+        <div class="section-head">
+          <h2 data-i18n="products_title">核心产品</h2>
+          <p class="section-desc" data-i18n="products_desc">从播放到游玩，一套技术栈贯通内容与运营。</p>
+        </div>
+        <div class="product-grid">
+          <article class="product-card product-featured">
+            <div class="product-icon" aria-hidden="true">▶</div>
+            <span class="product-tag" data-i18n="sc_tag">多媒体</span>
+            <h3>SCPlayer</h3>
+            <p class="product-sub" data-i18n="sc_sub">多媒体播放器 · Unity</p>
+            <p data-i18n="sc_desc">
+              基于 Unity 引擎打造的高性能多媒体播放器，支持常见音视频格式与流畅交互界面，
+              适用于教育、展示、嵌入式播放等场景，可与星澜内容生态无缝衔接。
+            </p>
+            <ul class="product-points">
+              <li data-i18n="sc_p1">Unity 跨平台渲染与 UI 体系</li>
+              <li data-i18n="sc_p2">专注播放体验与扩展插件架构</li>
+              <li data-i18n="sc_p3">面向企业与内容方定制部署</li>
+            </ul>
+          </article>
+          <article class="product-card">
+            <div class="product-icon" aria-hidden="true">◆</div>
+            <span class="product-tag" data-i18n="plat_tag">平台</span>
+            <h3 data-i18n="plat_name">星澜小游戏平台</h3>
+            <p class="product-sub" data-i18n="plat_sub">统一发行 · H5 热更新</p>
+            <p data-i18n="plat_desc">
+              统一账号、金币福利与游戏目录的轻量发行平台。客户端动态拉取游戏列表，
+              H5 包体在线更新，运营后台可配置上架、版本与渠道，降低发版成本。
+            </p>
+            <ul class="product-points">
+              <li data-i18n="plat_p1">多游戏一站式登录与任务体系</li>
+              <li data-i18n="plat_p2">H5 / Unity 混合接入</li>
+              <li data-i18n="plat_p3">IDIP 运营台与数据审计</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="games" class="section section-alt">
+      <div class="wrap">
+        <div class="section-head">
+          <h2 data-i18n="games_title">精品小游戏</h2>
+          <p class="section-desc" data-i18n="games_desc">星澜平台持续上线的原创与联运作品，即点即玩、碎片时间友好。</p>
+        </div>
+        <ul class="game-grid">
+          <li class="game-card">
+            <span class="game-tag" data-i18n="g1_tag">休闲 · 养成</span>
+            <h3 data-i18n="g1_name">吸血鬼宿舍</h3>
+            <p data-i18n="g1_desc">趣味宿舍题材休闲小游戏，轻松上手，适合全年龄段碎片娱乐。</p>
+          </li>
+          <li class="game-card">
+            <span class="game-tag" data-i18n="g2_tag">益智 · 脑力</span>
+            <h3 data-i18n="g2_name">最强大脑</h3>
+            <p data-i18n="g2_desc">挑战观察力与逻辑思维的益智关卡，层层递进，锻炼最强大脑。</p>
+          </li>
+          <li class="game-card">
+            <span class="game-tag" data-i18n="g3_tag">策略 · 闯关</span>
+            <h3 data-i18n="g3_name">拯救主公</h3>
+            <p data-i18n="g3_desc">策略解谜与闯关结合，保护主公过关斩将，节奏紧凑耐玩。</p>
+          </li>
+          <li class="game-card">
+            <span class="game-tag" data-i18n="g4_tag">射击 · H5</span>
+            <h3 data-i18n="g4_name">向僵尸开炮</h3>
+            <p data-i18n="g4_desc">经典射击玩法 H5 化，爽快清屏，支持平台热更新与版本管理。</p>
+          </li>
+          <li class="game-card">
+            <span class="game-tag" data-i18n="g5_tag">街机 · 空战</span>
+            <h3 data-i18n="g5_name">雷霆战机</h3>
+            <p data-i18n="g5_desc">全民打飞机式街机射击，操控战机躲避弹幕、击破敌机。</p>
+          </li>
+          <li class="game-card game-card-more">
+            <span class="game-tag" data-i18n="g6_tag">更多</span>
+            <h3 data-i18n="g6_name">持续更新中</h3>
+            <p data-i18n="g6_desc">消除宝石、极速跳跃、转盘挑战等更多品类，详见星澜小游戏平台客户端。</p>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="about" class="section">
+      <div class="wrap about-grid">
+        <div>
+          <h2 data-i18n="about_title">关于星澜无界</h2>
+          <p data-i18n-html="about_body">
+            <strong>StarLaneInfinite Technology</strong> 致力于「内容无界、体验有界」——
+            用可靠的多媒体与游戏技术，让优质内容触达更多用户。
+            团队具备 Unity 客户端、Go 服务端与 H5 发行全链路能力，从 SCPlayer 播放到小游戏平台上架，形成完整产品矩阵。
+          </p>
+        </div>
+        <ul class="feature-list">
+          <li data-i18n-html="about_f1"><strong>SCPlayer</strong> — Unity 多媒体播放器，面向内容与展示场景</li>
+          <li data-i18n-html="about_f2"><strong>星澜小游戏平台</strong> — 账号、金币、任务、排行榜一体化</li>
+          <li data-i18n-html="about_f3"><strong>原创游戏 IP</strong> — 吸血鬼宿舍、最强大脑、拯救主公等持续运营</li>
+          <li data-i18n-html="about_f4"><strong>技术栈</strong> — Unity · H5 · Go API · 运营 IDIP 后台</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="contact" class="section section-alt">
+      <div class="wrap contact-box">
+        <h2 data-i18n="contact_title">商务与合作</h2>
+        <p data-i18n="contact_body">游戏联运、SCPlayer 定制、平台技术对接，欢迎与我们联系。</p>
+        <p class="contact-email">
+          <span data-i18n="contact_email">企业邮箱：</span>
+          <a href="mailto:support@starlaneinfinite.com">support@starlaneinfinite.com</a>
+        </p>
+        <p class="contact-brand" data-i18n="contact_brand">StarLaneInfinite Technology · 星澜无界科技</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-inner">
+      <span>© StarLaneInfinite Technology</span>
+      <span class="sep">·</span>
+      <span data-i18n="footer_brand">星澜无界科技</span>
+      <span class="sep">·</span>
+      <a class="footer-mail" href="mailto:support@starlaneinfinite.com">support@starlaneinfinite.com</a>
+    </div>
+  </footer>
+</body>
+</html>

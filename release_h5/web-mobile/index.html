@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+
+  <title>Cocos Creator | outputProject</title>
+
+  <!--http://www.html5rocks.com/en/mobile/mobifying/-->
+  <meta name="viewport"
+        content="width=device-width,user-scalable=no,initial-scale=1, minimum-scale=1,maximum-scale=1"/>
+
+  <!--https://developer.apple.com/library/safari/documentation/AppleApplications/Reference/SafariHTMLRef/Articles/MetaTags.html-->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="format-detection" content="telephone=no">
+
+  <!-- force webkit on 360 -->
+  <meta name="renderer" content="webkit"/>
+  <meta name="force-rendering" content="webkit"/>
+  <!-- force edge on IE -->
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+  <meta name="msapplication-tap-highlight" content="no">
+
+  <!-- force full screen on some browser -->
+  <meta name="full-screen" content="yes"/>
+  <meta name="x5-fullscreen" content="true"/>
+  <meta name="360-fullscreen" content="true"/>
+  
+  <!-- force screen orientation on some browser -->
+  <meta name="screen-orientation" content="portrait"/>
+  <meta name="x5-orientation" content="portrait">
+
+  <!--fix fireball/issues/3568 -->
+  <!--<meta name="browsermode" content="application">-->
+  <meta name="x5-page-mode" content="app">
+
+  <!--<link rel="apple-touch-icon" href=".png" />-->
+  <!--<link rel="apple-touch-icon-precomposed" href=".png" />-->
+
+  <link rel="stylesheet" type="text/css" href="style-mobile.25fc5.css"/>
+  <link rel="icon" href="favicon.8de18.ico"/>
+</head>
+<body>
+  <script>
+    (function () {
+      function postHostGesture(kind, event) {
+        var x = event && typeof event.clientX === 'number' ? event.clientX : -1;
+        var y = event && typeof event.clientY === 'number' ? event.clientY : -1;
+        var payload = { __h5Bridge: true, type: 'gesture', kind: kind, x: x, y: y, ts: Date.now() };
+        try {
+          if (window.parent && window.parent !== window && typeof window.parent.postMessage === 'function') {
+            window.parent.postMessage(payload, '*');
+          }
+        } catch (_) {}
+        try {
+          if (window.top && window.top !== window && typeof window.top.postMessage === 'function') {
+            window.top.postMessage(payload, '*');
+          }
+        } catch (_) {}
+      }
+      function postBridgePing() {
+        var payload = { __h5Bridge: true, type: 'ping', kind: 'heartbeat', x: -1, y: -1, ts: Date.now() };
+        try {
+          if (window.parent && window.parent !== window && typeof window.parent.postMessage === 'function') {
+            window.parent.postMessage(payload, '*');
+          }
+        } catch (_) {}
+        try {
+          if (window.top && window.top !== window && typeof window.top.postMessage === 'function') {
+            window.top.postMessage(payload, '*');
+          }
+        } catch (_) {}
+      }
+      function relayClickLike(e) { postHostGesture('click', e); }
+      function relayDblClick(e) { postHostGesture('dblclick', e); }
+      document.addEventListener('click', relayClickLike, true);
+      document.addEventListener('dblclick', relayDblClick, true);
+      window.addEventListener('click', relayClickLike, true);
+      window.addEventListener('dblclick', relayDblClick, true);
+      window.addEventListener('pointerup', relayClickLike, true);
+      window.addEventListener('mouseup', relayClickLike, true);
+      document.addEventListener('touchend', function (e) {
+        var t = e && e.changedTouches && e.changedTouches[0];
+        postHostGesture('click', t || null);
+      }, { capture: true, passive: true });
+      window.addEventListener('touchend', function (e) {
+        var t = e && e.changedTouches && e.changedTouches[0];
+        postHostGesture('click', t || null);
+      }, { capture: true, passive: true });
+      console.log('[web-mobile] h5 bridge gesture postMessage enabled');
+      postBridgePing();
+      setInterval(postBridgePing, 2000);
+    })();
+  </script>
+  <script>
+    (function () {
+      if (location.protocol !== "file:") {
+        return;
+      }
+      var s = document.createElement("div");
+      s.setAttribute("id", "cc-file-protocol-notice");
+      s.style.cssText =
+        "position:fixed;inset:0;z-index:99999;background:#1a1a1a;color:#eee;" +
+        "font:14px/1.5 system-ui,sans-serif;padding:20px;box-sizing:border-box;overflow:auto;";
+      s.innerHTML =
+        "<h2 style='margin:0 0 12px;'>请用 http:// 打开，不要双击用 file:// 打开</h2>" +
+        "<p style='margin:0 0 8px;'>Cocos 网页包需要用 HTTP 服务加载 <code>assets</code> 分块，用 <code>file://</code> 时浏览器会拦截资源请求，会<strong>一直卡在闪屏</strong>。</p>" +
+        "<p style='margin:0 0 8px;'>在本目录下双击运行 <code>serve-web-mobile.cmd</code>，然后浏览器打开：</p>" +
+        "<p style='margin:0 0 8px;word-break:break-all;'><a href='http://127.0.0.1:8765' style='color:#6cf;'>http://127.0.0.1:8765</a>（本机预览）</p>" +
+        "<p style='margin:0;color:#999;font-size:12px;'>真机 WebView 里请用 <code>https://你的域名/...</code> 或 <code>file:///android_asset/...</code> 按客户端规范加载整站。</p>";
+      function show() {
+        if (document.body) {
+          document.body.insertBefore(s, document.body.firstChild);
+        } else {
+          setTimeout(show, 0);
+        }
+      }
+      show();
+    })();
+  </script>
+  <canvas id="GameCanvas" oncontextmenu="event.preventDefault()" tabindex="0"></canvas>
+  <div id="splash">
+    <div class="progress-bar stripes">
+      <span style="width: 0%"></span>
+    </div>
+  </div>
+
+<script src="src/settings.1ca7e.js" charset="utf-8"></script>
+
+<script src="main.6a551.js" charset="utf-8"></script>
+<script src="webview-bridge.js" charset="utf-8"></script>
+
+<script type="text/javascript">
+(function () {
+    // open web debugger console
+    if (typeof VConsole !== 'undefined') {
+        window.vConsole = new VConsole();
+    }
+
+    var debug = window._CCSettings.debug;
+    var splash = document.getElementById('splash');
+    splash.style.display = 'block';
+
+    function loadScript (moduleName, cb) {
+      function scriptLoaded () {
+          document.body.removeChild(domScript);
+          domScript.removeEventListener('load', scriptLoaded, false);
+          cb && cb();
+      };
+      var domScript = document.createElement('script');
+      domScript.async = true;
+      domScript.src = moduleName;
+      domScript.addEventListener('load', scriptLoaded, false);
+      document.body.appendChild(domScript);
+    }
+
+    loadScript(debug ? 'cocos2d-js.js' : 'cocos2d-js-min.ffc45.js', function () {
+      if (CC_PHYSICS_BUILTIN || CC_PHYSICS_CANNON) {
+        loadScript(debug ? 'physics.js' : 'physics-min.7f489.js', window.boot);
+      }
+      else {
+        window.boot();
+      }
+    });
+})();
+</script>
+</body>
+</html>

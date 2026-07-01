@@ -1,0 +1,65 @@
+{
+  "log": {
+    "level": "trace"
+  },
+  "apiListenHost": "0.0.0.0",
+  "apiListenPort": 8080,
+  "useHttps": false,
+  "tlsCertFile": "",
+  "tlsKeyFile": "",
+  "authMysqlDsn": "root:jgyjgyjgy@tcp(127.0.0.1:3306)/starcrystal_auth?charset=utf8mb4&parseTime=true&loc=Local",
+  "redisAddr": "127.0.0.1:6379",
+  "redisPassword": "",
+  "redisDb": 0,
+  "policy": {
+    "maxAccountsPerDevice": 1,
+    "deviceSilentSeconds": 5
+  },
+  "gold": {
+    "dailyProduceCapEnabled": true,
+    "dailyProduceCap": 50000,
+    "dailyProduceCapOverflow": "clamp",
+    "dailyProduceCapByBiz": {
+      "ad": 20000,
+      "signin": 5000,
+      "task": 10000
+    },
+    "timezone": "Asia/Shanghai"
+  },
+  "welfare": {
+    "monthTokenPool": 1000000,
+    "monthTokenPoolByMonth": {},
+    "monthlyExchangeAt": "23:00:00",
+    "monthlyExchangeDay": "penultimate",
+    "tokenDeltaRound": "floor",
+    "tokenDeltaDecimals": 2
+  },
+  "invite": {
+    "enabled": true,
+    "directShareRate": 0.1,
+    "secondShareRate": 0.05,
+    "shareDecimals": 2,
+    "shareRound": "floor",
+    "maxDirectSharePerEvent": 500,
+    "maxSecondSharePerEvent": 250,
+    "maxTotalSharePerEvent": 600,
+    "gmGrantShareMode": "none",
+    "gmMaxDirectSharePerEvent": 100,
+    "gmMaxSecondSharePerEvent": 50,
+    "gmMaxTotalSharePerEvent": 120,
+    "heartbeatIntervalSec": 60,
+    "heartbeatOfflineSec": 180,
+    "notifyMergeSec": 60,
+    "notifyAutoAckDays": 7
+  },
+  "idip": {
+    "key": "change-me-in-production",
+    "operatorCipherKey": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+    "operators": [
+      {
+        "username": "ops_admin",
+        "passwordEnc": "v1:YPiTGYozePxdAdxItOVA/rixhA7nWzWlcpjFdZttJIiQ/B9c1HQx2WoClwNwITRQ+kk="
+      }
+    ]
+  }
+}

@@ -1,0 +1,41 @@
+
+tx_shengji.png
+size: 346,152
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+zhujiaoshengji/1
+  rotate: true
+  xy: 2, 2
+  size: 12, 297
+  orig: 14, 323
+  offset: 1, 14
+  index: -1
+zhujiaoshengji/4444
+  rotate: false
+  xy: 320, 22
+  size: 24, 128
+  orig: 32, 128
+  offset: 5, 0
+  index: -1
+zhujiaoshengji/CFX4_T_Glow AB_Half
+  rotate: false
+  xy: 2, 16
+  size: 250, 134
+  orig: 250, 134
+  offset: 0, 0
+  index: -1
+zhujiaoshengji/Soft
+  rotate: false
+  xy: 254, 16
+  size: 62, 62
+  orig: 64, 64
+  offset: 1, 1
+  index: -1
+zhujiaoshengji/glow_small
+  rotate: false
+  xy: 254, 86
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1

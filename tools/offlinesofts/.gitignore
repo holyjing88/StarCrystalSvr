@@ -1,0 +1,18 @@
+# 离线安装包体积大，仅保留目录结构与脚本入 Git
+mysql/*
+!mysql/.gitkeep
+!mysql/README.txt
+mysql/*.tar
+redis/*
+!redis/.gitkeep
+!redis/README.txt
+go/*
+!go/.gitkeep
+!go/README.txt
+go-modules/*
+!go-modules/.gitkeep
+!go-modules/README.txt
+runtime/deb/*.deb
+runtime/rpm/*
+!runtime/deb/.gitkeep
+!runtime/README.txt

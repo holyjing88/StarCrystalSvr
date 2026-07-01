@@ -1,0 +1,62 @@
+
+bingren.png
+size: 433,258
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+Soft
+  rotate: false
+  xy: 305, 132
+  size: 124, 124
+  orig: 124, 124
+  offset: 0, 0
+  index: -1
+arm_left
+  rotate: true
+  xy: 237, 20
+  size: 21, 81
+  orig: 61, 85
+  offset: 36, 1
+  index: -1
+arm_right
+  rotate: true
+  xy: 320, 20
+  size: 21, 81
+  orig: 61, 85
+  offset: 5, 1
+  index: -1
+body
+  rotate: true
+  xy: 305, 43
+  size: 87, 96
+  orig: 87, 96
+  offset: 0, 0
+  index: -1
+foot_right
+  rotate: true
+  xy: 403, 63
+  size: 67, 28
+  orig: 67, 28
+  offset: 0, 0
+  index: -1
+head
+  rotate: true
+  xy: 2, 61
+  size: 195, 301
+  orig: 198, 308
+  offset: 0, 4
+  index: -1
+leg_left
+  rotate: true
+  xy: 120, 2
+  size: 57, 115
+  orig: 58, 116
+  offset: 0, 0
+  index: -1
+leg_right
+  rotate: true
+  xy: 2, 2
+  size: 57, 116
+  orig: 58, 116
+  offset: 0, 0
+  index: -1

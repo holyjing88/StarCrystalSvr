@@ -1,0 +1,83 @@
+
+kuangbao.png
+size: 155,69
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+22_000
+  rotate: false
+  xy: 121, 5
+  size: 27, 19
+  orig: 33, 38
+  offset: 3, 1
+  index: -1
+22_001
+  rotate: false
+  xy: 69, 34
+  size: 31, 33
+  orig: 33, 38
+  offset: 1, 0
+  index: -1
+22_002
+  rotate: false
+  xy: 2, 29
+  size: 33, 38
+  orig: 33, 38
+  offset: 0, 0
+  index: -1
+22_003
+  rotate: false
+  xy: 37, 30
+  size: 30, 37
+  orig: 33, 38
+  offset: 3, 1
+  index: -1
+22_004
+  rotate: false
+  xy: 2, 3
+  size: 31, 24
+  orig: 33, 38
+  offset: 2, 2
+  index: -1
+enrage_lightning_2_0001
+  rotate: true
+  xy: 92, 2
+  size: 10, 20
+  orig: 19, 77
+  offset: 5, 0
+  index: -1
+enrage_lightning_2_0002
+  rotate: false
+  xy: 141, 26
+  size: 12, 37
+  orig: 19, 77
+  offset: 4, 0
+  index: -1
+enrage_lightning_2_0003
+  rotate: false
+  xy: 141, 26
+  size: 12, 37
+  orig: 19, 77
+  offset: 4, 0
+  index: -1
+enrage_lightning_2_0004
+  rotate: false
+  xy: 102, 14
+  size: 17, 53
+  orig: 19, 77
+  offset: 1, 0
+  index: -1
+enrage_lightning_2_0007
+  rotate: true
+  xy: 37, 9
+  size: 19, 53
+  orig: 19, 77
+  offset: 0, 0
+  index: -1
+enrage_lightning_2_0008
+  rotate: false
+  xy: 121, 26
+  size: 18, 41
+  orig: 19, 77
+  offset: 1, 8
+  index: -1

@@ -1,0 +1,23 @@
+{
+  "name": "starcrystal-idip-webclient",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "regression": "vitest run --reporter=verbose",
+    "acceptance": "node scripts/browser-acceptance.mjs",
+    "acceptance:client": "node scripts/client-regression-acceptance.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "playwright": "^1.49.1",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.3",
+    "vitest": "^2.1.8"
+  }
+}

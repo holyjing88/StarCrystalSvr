@@ -1,0 +1,125 @@
+{
+  "list": [
+    {
+      "gameId": "g001",
+      "name": "消除宝石",
+      "nameEn": "Gem Crush",
+      "nameUr": "جیم کُرش",
+      "note": "经典三消，轻松上手",
+      "noteEn": "Classic match-3 — easy to pick up.",
+      "noteUr": "کلاسک میچ تھری، آسانی سے شروع کریں۔",
+      "iconLink": "https://httpbin.org/image/png",
+      "entryType": "h5",
+      "entryUrl": "h5/game1/index.html?v=1.0.0.0",
+      "downloadUrl": "h5/game1_v1.0.0.0.tar.gz",
+      "packageBytes": 13877,
+      "downloadSha256": "4bfab487dd53352d2aeb44ffab4966c9cdd7e33231a36a8c089134acb11c0557",
+      "minAppVersion": "1.0.0.0",
+      "sort": 1,
+      "status": "online",
+      "channels": [
+        "ChannelType_GooglePlay"
+      ]
+    },
+    {
+      "gameId": "g002",
+      "name": "极速跳跃",
+      "nameEn": "Speed Jump",
+      "nameUr": "اسپیڈ جمپ",
+      "note": "需要客户端 ≥1.0.0",
+      "noteEn": "Requires app version ≥ 1.0.0",
+      "noteUr": "ایپ ورژن ≥ 1.0.0 درکار ہے",
+      "entryType": "h5",
+      "entryUrl": "h5/game2/index.html?v=1.0.0.0",
+      "downloadUrl": "h5/game2_v1.0.0.0.tar.gz",
+      "packageBytes": 2702,
+      "downloadSha256": "b1c05eb767b92e25cf7ce85efd231d2080a0b4b01bde09a2a20d5c160c0684bc",
+      "minAppVersion": "1.0.0.0",
+      "sort": 2,
+      "status": "online",
+      "channels": [
+        "ChannelType_CompanyOwned",
+        "ChannelType_GooglePlay"
+      ]
+    },
+    {
+      "gameId": "g003",
+      "name": "转盘挑战",
+      "nameEn": "Spin Wheel",
+      "nameUr": "سپن وہیل",
+      "entryType": "h5",
+      "entryUrl": "h5/game3/index.html?v=1.0.0.0",
+      "downloadUrl": "h5/game3_v1.0.0.0.tar.gz",
+      "packageBytes": 3353,
+      "downloadSha256": "4b7652d997336664f61b4bf9bf7fddb6839c6f5971d769e7daf213de9deebe1c",
+      "minAppVersion": "1.0.0.0",
+      "sort": 3,
+      "status": "online",
+      "channels": [
+        "ChannelType_CompanyOwned"
+      ]
+    },
+    {
+      "gameId": "g004",
+      "name": "向僵尸开炮",
+      "nameEn": "Zombie Blaster",
+      "nameUr": "زومبی بلاسٹر",
+      "note": "H5 包体；iconLink 空时用 coverUrl",
+      "noteEn": "H5 build; uses coverUrl when iconLink is empty.",
+      "noteUr": "H5 پیکج؛ آئیکن لنک خالی ہونے پر coverUrl استعمال ہوتا ہے۔",
+      "coverUrl": "https://httpbin.org/image/jpeg",
+      "entryType": "h5",
+      "entryUrl": "h5/web-mobile/index.html?v=1.0.0.0",
+      "downloadUrl": "h5/web-mobile_v1.0.0.0.tar.gz",
+      "packageBytes": 33047068,
+      "downloadSha256": "f4ae3a1b18e956142c70c016c2e5ddb30ea97e2f5da594840bd9179fd6f22205",
+      "minAppVersion": "1.0.0.0",
+      "sort": 4,
+      "status": "online",
+      "channels": [
+        "ChannelType_CompanyOwned",
+        "ChannelType_GooglePlay"
+      ]
+    },
+    {
+      "gameId": "g005",
+      "name": "雷霆战机",
+      "nameEn": "Thunder Fighter",
+      "nameUr": "تھنڈر فائٹر",
+      "note": "全民打飞机",
+      "noteEn": "Classic arcade shooter.",
+      "noteUr": "کلاسک آرکیڈ شوٹر۔",
+      "coverUrl": "https://httpbin.org/image/jpeg",
+      "entryType": "h5",
+      "entryUrl": "h5/web-mobile-planefight/index.html?v=1.0.0.4",
+      "downloadUrl": "h5/web-mobile-planefight_v1.0.0.4.tar.gz",
+      "packageBytes": 7998351,
+      "downloadSha256": "c7d57f4e844c51a79470d3d244853c66cbb2efe49537c1c7aa2c668b038d1157",
+      "minAppVersion": "1.0.0.0",
+      "sort": 1,
+      "status": "online"
+    },
+    {
+      "gameId": "g006",
+      "name": "吸血鬼宿舍",
+      "nameEn": "Thunder Fighter",
+      "nameUr": "تھنڈر فائٹر",
+      "note": "吸血鬼宿舍",
+      "noteEn": "Classic arcade shooter.",
+      "noteUr": "کلاسک آرکیڈ شوٹر۔",
+      "coverUrl": "https://httpbin.org/image/jpeg",
+      "entryType": "h5",
+      "entryUrl": "h5/VampireDormitory/index.html?v=1.0.0.0",
+      "downloadUrl": "h5/VampireDormitory_v1.0.0.0.tar.gz",
+      "packageBytes": 8341916,
+      "downloadSha256": "ac722c2d4ca9732df1c4d33a591fc0c229fccfdb7d1d698bdcb36b5b731217b8",
+      "minAppVersion": "1.0.0.0",
+      "sort": 1,
+      "status": "online",
+      "channels": [
+        "ChannelType_CompanyOwned",
+        "ChannelType_GooglePlay"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+
+boss_gongji.png
+size: 189,124
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+zhua1
+  rotate: false
+  xy: 2, 2
+  size: 128, 120
+  orig: 128, 120
+  offset: 0, 0
+  index: -1
+zhua2
+  rotate: false
+  xy: 132, 4
+  size: 55, 118
+  orig: 57, 128
+  offset: 1, 3
+  index: -1

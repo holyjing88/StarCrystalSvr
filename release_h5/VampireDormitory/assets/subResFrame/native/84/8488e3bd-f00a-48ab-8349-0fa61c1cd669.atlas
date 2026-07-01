@@ -1,0 +1,48 @@
+
+wuxiantili.png
+size: 308,181
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+1
+  rotate: false
+  xy: 82, 8
+  size: 104, 30
+  orig: 106, 32
+  offset: 1, 1
+  index: -1
+2
+  rotate: false
+  xy: 2, 2
+  size: 38, 36
+  orig: 40, 38
+  offset: 1, 1
+  index: -1
+3
+  rotate: false
+  xy: 42, 2
+  size: 38, 36
+  orig: 40, 38
+  offset: 1, 1
+  index: -1
+4
+  rotate: false
+  xy: 188, 30
+  size: 6, 8
+  orig: 8, 10
+  offset: 1, 1
+  index: -1
+5
+  rotate: true
+  xy: 223, 16
+  size: 163, 83
+  orig: 163, 83
+  offset: 0, 0
+  index: -1
+6
+  rotate: false
+  xy: 2, 40
+  size: 219, 139
+  orig: 227, 147
+  offset: 4, 4
+  index: -1

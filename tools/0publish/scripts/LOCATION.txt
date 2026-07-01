@@ -1,0 +1,14 @@
+本目录在 d:\0_games\000StarCrystal\server 下仅为开发副本。
+
+发布脚本权威路径:
+  Y:\holyjing\starcrystalsvr\tools\0publish\scripts\
+
+发布产物（子目录与总包）:
+  Y:\holyjing\starcrystalsvr\tools\0publish\
+
+同步到 Y 盘:
+  .\tools\scripts\sync-publish-scripts-to-y.ps1
+
+发布:
+  cd Y:\holyjing\starcrystalsvr
+  .\tools\0publish\scripts\pack-publish.ps1

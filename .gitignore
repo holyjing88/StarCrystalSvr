@@ -1,0 +1,42 @@
+# 本地 SMTP / 私密（从 smtp.local.env.example 复制后填写密码）
+configs/smtp.local.env
+release/configs/smtp.local.env
+**/*.local.env
+tools/scripts/dbscripts/local.env
+tools/linux-host.local.env
+
+# SVN 工作副本元数据
+.svn/
+
+# 编译产物
+api.exe
+
+# IDE
+.cursor/
+
+# Windows 便携 Redis（github.com/tporadowski/redis 解压产物，体积大）
+redis/*.exe
+redis/*.dll
+redis/*.pdb
+redis/*.zip
+redis/data/
+
+# Linux 便携 Redis（install-redis-linux.sh / offlinesofts 编译产物）
+redis/linux/redis-server
+redis/linux/redis-cli
+
+# 离线 Go 工具链与模块缓存（tools/offlinesofts/install-linux-offline.sh）
+.go-toolchain/
+.gomodcache/
+
+# Docker 开发数据卷与导出镜像 tar
+.docker-data/
+.docker-images/
+
+# 本机最后一次 starcrystalsvr / mysql-start 使用的 DSN（供 clean-rebuild 对准同一实例）
+release/log/last-auth-mysql-dsn.txt
+# 历史错误路径（已修复 starcrystalReleaseLogDirsForPersist）；勿提交
+release/release/
+server-go/
+internal/api/release/
+internal/service/release/

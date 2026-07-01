@@ -1,0 +1,1 @@
+{"root":["./src/main.ts","./src/vite-env.d.ts","./src/api/idipclient.ts","./src/api/types.ts","./src/tests/cases.ts","./src/tests/runner.ts"],"version":"5.9.3"}

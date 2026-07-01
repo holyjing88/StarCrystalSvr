@@ -1,0 +1,5 @@
+*.sh text eol=lf
+pack-publish.sh text eol=lf
+pack-publish-verify.sh text eol=lf
+pack-publish-linux-remote.sh text eol=lf
+unpack.sh text eol=lf

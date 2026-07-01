@@ -1,0 +1,2 @@
+# StarCrystal Docker MySQL 定时备份（容器内 crond；备份写入挂载卷 /backups）
+0 3 * * * root . /etc/mysql/backup.env 2>/dev/null; MYSQL_UNIX_SOCKET=/var/run/mysqld/mysqld.sock /opt/starcrystal/mysql-scripts/mysql-backup.sh >>/backups/cron.log 2>&1

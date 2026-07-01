@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>转盘挑战</title>
+  <style>
+    html { height: 100%; }
+    html, body { margin: 0; padding: 0; background: #1b1022; color: #f8eaff; font-family: system-ui, Arial, sans-serif; }
+    body {
+      min-height: 100%;
+      padding: max(12px, env(safe-area-inset-top)) 12px max(22px, env(safe-area-inset-bottom));
+      box-sizing: border-box;
+    }
+    h2 { margin: 0 0 10px; font-size: 1.2rem; text-align: center; }
+    .row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 10px 0; font-size: 14px; }
+    .pill { background: #2d1f3d; padding: 6px 12px; border-radius: 999px; border: 1px solid #a766ff44; }
+    .wheelWrap {
+      position: relative;
+      width: min(78vw, 280px);
+      height: min(78vw, 280px);
+      margin: 16px auto;
+    }
+    .wheel {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: 10px solid #a766ff;
+      box-sizing: border-box;
+      background: conic-gradient(
+        #7c3aed 0deg 45deg,
+        #db2777 45deg 90deg,
+        #f59e0b 90deg 135deg,
+        #10b981 135deg 180deg,
+        #6366f1 180deg 225deg,
+        #ec4899 225deg 270deg,
+        #14b8a6 270deg 315deg,
+        #8b5cf6 315deg 360deg
+      );
+      transition: transform 3.2s cubic-bezier(0.12, 0.85, 0.15, 1);
+      box-shadow: 0 12px 40px rgba(0,0,0,.45);
+    }
+    .hub {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 22%;
+      height: 22%;
+      margin: -11% 0 0 -11%;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #fff2, #2d1f3d);
+      border: 4px solid #f0abfc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      text-align: center;
+      line-height: 1.1;
+      pointer-events: none;
+    }
+    .pointer {
+      position: absolute;
+      left: 50%;
+      top: -8px;
+      margin-left: -14px;
+      width: 0;
+      height: 0;
+      border-left: 14px solid transparent;
+      border-right: 14px solid transparent;
+      border-bottom: 26px solid #fde047;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,.4));
+      z-index: 2;
+      pointer-events: none;
+    }
+    .btnRow { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; max-width: 420px; margin: 14px auto 0; }
+    button {
+      border: 0; border-radius: 12px; padding: 12px 16px; font-size: 15px;
+      background: #8a42ff; color: #fff; cursor: pointer; flex: 1 1 140px; min-width: 120px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.35);
+    }
+    button.secondary { background: #4c3d6b; }
+    button.ad { background: #c026d3; }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+    #log { font-size: 13px; text-align: center; min-height: 3em; line-height: 1.45; color: #d8b4fe; margin-top: 12px; max-width: 420px; margin-left: auto; margin-right: auto; }
+    .hint { font-size: 11px; color: #7e668f; text-align: center; margin-top: 10px; max-width: 420px; margin-left: auto; margin-right: auto; line-height: 1.35; }
+  </style>
+</head>
+<body>
+  <h2>转盘挑战 · 每日运势</h2>
+  <div class="row">
+    <span class="pill">星币 <strong id="bal">0</strong></span>
+    <span class="pill">转盘券 <strong id="tickets">0</strong></span>
+    <span class="pill">今日免费 <strong id="freeLeft">1</strong></span>
+  </div>
+  <div class="wheelWrap">
+    <div class="pointer"></div>
+    <div id="wheel" class="wheel"></div>
+    <div class="hub">GO</div>
+  </div>
+  <div class="btnRow">
+    <button type="button" id="spin">转动转盘</button>
+    <button type="button" id="btnAdTickets" class="ad">激励：+3 转盘券</button>
+    <button type="button" id="btnBuySmall" class="secondary">50 星币换 1 券</button>
+  </div>
+  <div id="log" aria-live="polite"></div>
+  <p class="hint"><span style="color:#fde047">商业化</span>：每日免费次数 + 星币经济 + 激励视频增发转盘券（<code>g003</code>）；中奖概率可按后台配置扩展。</p>
+  <script src="../js/crystabox-ad.js"></script>
+  <script>
+    (function () {
+      var STORAGE = 'g003_wheel_v1';
+      var SLICES = [
+        { label: '星币×80', type: 'coin', val: 80 },
+        { label: '谢谢惠顾', type: 'none', val: 0 },
+        { label: '星币×200', type: 'coin', val: 200 },
+        { label: '转盘券+1', type: 'ticket', val: 1 },
+        { label: '星币×40', type: 'coin', val: 40 },
+        { label: '大奖×500', type: 'coin', val: 500 },
+        { label: '星币×120', type: 'coin', val: 120 },
+        { label: '再转一次', type: 'freespin', val: 1 }
+      ];
+      var state = load();
+      var spinning = false;
+      var rot = 0;
+      var wheel = document.getElementById('wheel');
+      var logEl = document.getElementById('log');
+
+      function todayKey() {
+        var d = new Date();
+        return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+      }
+
+      function load() {
+        try {
+          var j = JSON.parse(localStorage.getItem(STORAGE) || '{}');
+          return {
+            coins: Math.max(0, parseInt(j.coins, 10) || 200),
+            tickets: Math.max(0, parseInt(j.tickets, 10) || 0),
+            lastDay: j.lastDay || '',
+            freeUsed: !!j.freeUsed && j.lastDay === todayKey()
+          };
+        } catch (e) {
+          return { coins: 200, tickets: 0, lastDay: '', freeUsed: false };
+        }
+      }
+
+      function save() {
+        localStorage.setItem(STORAGE, JSON.stringify({
+          coins: state.coins,
+          tickets: state.tickets,
+          lastDay: todayKey(),
+          freeUsed: state.freeUsed
+        }));
+      }
+
+      function refreshFreeLabel() {
+        var fresh = state.lastDay !== todayKey();
+        if (fresh) {
+          state.freeUsed = false;
+          state.lastDay = todayKey();
+          save();
+        }
+        document.getElementById('freeLeft').textContent = state.freeUsed ? '0' : '1';
+      }
+
+      function ui() {
+        document.getElementById('bal').textContent = state.coins;
+        document.getElementById('tickets').textContent = state.tickets;
+        refreshFreeLabel();
+      }
+
+      function weightedPick() {
+        var w = [18, 22, 8, 12, 20, 4, 10, 6];
+        var s = 0;
+        for (var i = 0; i < w.length; i++) s += w[i];
+        var r = Math.random() * s;
+        for (var j = 0, acc = 0; j < w.length; j++) {
+          acc += w[j];
+          if (r < acc) return j;
+        }
+        return 0;
+      }
+
+      function applyPrize(idx) {
+        var p = SLICES[idx];
+        if (p.type === 'coin') state.coins += p.val;
+        else if (p.type === 'ticket') state.tickets += p.val;
+        else if (p.type === 'freespin') state.tickets += p.val;
+        save();
+        ui();
+        logEl.textContent = '抽中：' + p.label;
+      }
+
+      function canSpin() {
+        if (!state.freeUsed) return { ok: true, mode: 'free' };
+        if (state.tickets > 0) return { ok: true, mode: 'ticket' };
+        return { ok: false, mode: 'none' };
+      }
+
+      document.getElementById('spin').addEventListener('click', function () {
+        if (spinning) return;
+        var chk = canSpin();
+        if (!chk.ok) {
+          logEl.textContent = '转盘券不足且今日免费已用；可看激励广告或星币兑换。';
+          return;
+        }
+        if (chk.mode === 'free') {
+          state.freeUsed = true;
+          save();
+        } else {
+          state.tickets--;
+          save();
+        }
+        ui();
+
+        spinning = true;
+        this.disabled = true;
+        var idx = weightedPick();
+        var slice = 360 / SLICES.length;
+        var center = idx * slice + slice / 2;
+        var jitter = (Math.random() - 0.5) * (slice * 0.5);
+        var targetAngle = 360 * 6 + (360 - center) + jitter;
+        rot += targetAngle;
+        wheel.style.transform = 'rotate(' + rot + 'deg)';
+        setTimeout(function () {
+          spinning = false;
+          document.getElementById('spin').disabled = false;
+          applyPrize(idx);
+        }, 3200);
+      });
+
+      CrystaBoxH5Ad.bindRewardedUI(
+        document.getElementById('btnAdTickets'),
+        logEl,
+        'g003',
+        function () {
+          state.tickets += 3;
+          save();
+          ui();
+        }
+      );
+
+      document.getElementById('btnBuySmall').addEventListener('click', function () {
+        if (state.coins < 50) {
+          logEl.textContent = '星币不足（对局/转盘可获得）。';
+          return;
+        }
+        state.coins -= 50;
+        state.tickets += 1;
+        save();
+        ui();
+        logEl.textContent = '已用 50 星币兑换 1 张转盘券。';
+      });
+
+      ui();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,496 @@
+.login-card {
+  max-width: 28rem;
+  margin: 4rem auto;
+  padding: 2rem;
+}
+
+.login-card h1 {
+  margin: 0 0 1.5rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.login-error {
+  color: var(--fail);
+  min-height: 1.5rem;
+  margin: 0.5rem 0;
+}
+
+.login-card label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+  color: var(--muted);
+}
+
+.login-card label input {
+  display: block;
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 0.6rem 0.75rem;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.login-card .login-submit {
+  display: block;
+  width: 100%;
+  margin-top: 0.25rem;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 0.75rem 1.35rem;
+  border-radius: 6px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.login-card .login-submit:hover {
+  filter: brightness(1.08);
+}
+
+:root {
+  --bg: #0f1419;
+  --panel: #1a2332;
+  --border: #2d3a4f;
+  --text: #e7ecf3;
+  --muted: #8b9cb3;
+  --accent: #3d8bfd;
+  --ok: #3dd68c;
+  --fail: #f07178;
+  --warn: #e6b450;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  /* 相对浏览器默认 16px 放大约 1.2 倍，整页 rem 随之变大 */
+  font-size: 19px;
+  line-height: 1.5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+header {
+  padding: 1.25rem 2rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 1.65rem;
+  font-weight: 600;
+}
+
+.config-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.config-row label {
+  font-size: 0.95rem;
+  color: var(--muted);
+}
+
+.config-row input {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 0.55rem 0.85rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  min-width: 14rem;
+}
+
+.config-row input.wide {
+  min-width: 22rem;
+}
+
+nav.tabs {
+  display: flex;
+  gap: 0.35rem;
+  padding: 0 2rem;
+  border-bottom: 1px solid var(--border);
+}
+
+nav.tabs button {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 1.05rem;
+  padding: 1rem 1.35rem;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+}
+
+nav.tabs button.active {
+  color: var(--text);
+  border-bottom-color: var(--accent);
+}
+
+main {
+  padding: 2rem;
+  max-width: 96%;
+  width: 1400px;
+  margin: 0 auto;
+}
+
+.panel {
+  display: none;
+}
+
+.panel.active {
+  display: block;
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.35rem 1.5rem;
+  margin-bottom: 1.35rem;
+}
+
+.card h2 {
+  margin: 0 0 1rem;
+  font-size: 1.2rem;
+}
+
+form.api-form {
+  display: grid;
+  gap: 0.75rem;
+  max-width: 40rem;
+}
+
+form.api-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 1rem;
+  color: var(--muted);
+}
+
+form.api-form input,
+form.api-form select,
+form.api-form textarea {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 0.6rem 0.75rem;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+/* 卡片内独立 label（非 api-form） */
+.card label {
+  font-size: 1rem;
+}
+
+.card label input,
+.card label select {
+  font-size: 1rem;
+  padding: 0.55rem 0.75rem;
+  margin-top: 0.25rem;
+}
+
+button.primary {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 0.65rem 1.35rem;
+  border-radius: 6px;
+  font-size: 1.05rem;
+  cursor: pointer;
+  width: fit-content;
+}
+
+button.primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+pre.response {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 1rem 1.15rem;
+  border-radius: 6px;
+  overflow: auto;
+  max-height: 420px;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  margin-top: 1rem;
+}
+
+.status-pill {
+  display: inline-block;
+  padding: 0.3rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+.status-pill.ok {
+  background: rgba(61, 214, 140, 0.2);
+  color: var(--ok);
+}
+
+.status-pill.fail {
+  background: rgba(240, 113, 120, 0.2);
+  color: var(--fail);
+}
+
+table.regression {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.98rem;
+}
+
+table.regression th,
+table.regression td {
+  text-align: left;
+  padding: 0.75rem 0.85rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+
+table.regression th {
+  font-size: 1rem;
+  color: var(--muted);
+}
+
+.hint {
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.55;
+  margin-bottom: 1.25rem;
+}
+
+/* 回归测试 · 三类子 Tab */
+.regression-hub {
+  margin-top: 0.25rem;
+}
+
+nav.subtabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+nav.subtabs button {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 1rem;
+  padding: 0.55rem 1.1rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+nav.subtabs button.active {
+  color: var(--text);
+  border-color: var(--accent);
+  background: rgba(61, 139, 253, 0.15);
+}
+
+.regression-body .subpanel {
+  display: none;
+}
+
+.regression-body .subpanel.active {
+  display: block;
+}
+
+pre.run-log {
+  margin-top: 1rem;
+  max-height: 320px;
+}
+
+pre.run-log.hidden {
+  display: none;
+}
+
+td.warn {
+  color: var(--warn);
+  font-weight: 600;
+}
+
+td.ok {
+  color: var(--ok);
+  font-weight: 600;
+}
+
+td.fail {
+  color: var(--fail);
+  font-weight: 600;
+}
+
+.games-table-scroll {
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+.games-version {
+  display: inline-block;
+  margin-left: 1rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+table.games-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+table.games-table th,
+table.games-table td {
+  text-align: left;
+  padding: 0.55rem 0.65rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+table.games-table th {
+  color: var(--muted);
+  font-weight: 600;
+  white-space: nowrap;
+  background: var(--bg);
+}
+
+table.games-table td input,
+table.games-table td select {
+  width: 100%;
+  min-width: 5rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 0.4rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.92rem;
+}
+
+table.games-table td input.games-num-input {
+  min-width: 4rem;
+  max-width: 6rem;
+}
+
+.games-cell-readonly {
+  color: var(--muted);
+  font-family: ui-monospace, monospace;
+  font-size: 0.88rem;
+}
+
+.games-empty {
+  text-align: center;
+  color: var(--muted);
+  padding: 1.5rem !important;
+}
+
+.meta-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: 0.75rem 1.25rem;
+  margin: 1rem 0;
+  max-width: 56rem;
+}
+
+.meta-field-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.meta-field-label {
+  font-size: 0.95rem;
+  color: var(--muted);
+}
+
+.meta-field-control {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 0.55rem 0.75rem;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.batch-feedback {
+  margin: 0.75rem 0 0;
+  padding: 0.65rem 1rem;
+  border-radius: 6px;
+  font-size: 0.98rem;
+}
+
+.batch-feedback.hidden {
+  display: none;
+}
+
+.batch-feedback.ok {
+  background: rgba(61, 214, 140, 0.15);
+  color: var(--ok);
+  border: 1px solid rgba(61, 214, 140, 0.35);
+}
+
+.batch-feedback.fail {
+  background: rgba(240, 113, 120, 0.15);
+  color: var(--fail);
+  border: 1px solid rgba(240, 113, 120, 0.35);
+}
+
+.games-action-cell {
+  white-space: nowrap;
+  min-width: 7rem;
+}
+
+button.games-row-submit {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 0.35rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.88rem;
+  cursor: pointer;
+}
+
+button.games-row-submit:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+button.games-row-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.games-row-status {
+  display: inline-block;
+  margin-left: 0.4rem;
+  font-size: 0.85rem;
+}
+
+.games-row-status.ok {
+  color: var(--ok);
+}
+
+.games-row-status.fail {
+  color: var(--fail);
+}

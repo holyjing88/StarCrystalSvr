@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "timezone": "Asia/Shanghai",
+  "signin7dRewards": [100, 150, 200, 260, 330, 410, 520],
+  "featuredGameId": "featured_game_1",
+  "tierPolicy": {
+    "p0Enabled": true,
+    "p1Enabled": true,
+    "p2Enabled": true
+  },
+  "tasks": []
+}

@@ -1,0 +1,97 @@
+
+dandao.png
+size: 491,234
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+22
+  rotate: true
+  xy: 390, 23
+  size: 30, 48
+  orig: 30, 48
+  offset: 0, 0
+  index: -1
+33
+  rotate: true
+  xy: 132, 168
+  size: 64, 256
+  orig: 64, 256
+  offset: 0, 0
+  index: -1
+4_1
+  rotate: true
+  xy: 353, 4
+  size: 60, 35
+  orig: 60, 35
+  offset: 0, 0
+  index: -1
+6_5_1
+  rotate: true
+  xy: 2, 2
+  size: 100, 97
+  orig: 100, 97
+  offset: 0, 0
+  index: -1
+a1
+  rotate: false
+  xy: 132, 16
+  size: 136, 99
+  orig: 136, 99
+  offset: 0, 0
+  index: -1
+a2
+  rotate: true
+  xy: 308, 66
+  size: 100, 58
+  orig: 100, 58
+  offset: 0, 0
+  index: -1
+a3
+  rotate: false
+  xy: 390, 55
+  size: 99, 177
+  orig: 99, 177
+  offset: 0, 0
+  index: -1
+bubble_2
+  rotate: false
+  xy: 2, 104
+  size: 128, 128
+  orig: 128, 128
+  offset: 0, 0
+  index: -1
+fuwen
+  rotate: false
+  xy: 440, 23
+  size: 27, 30
+  orig: 27, 30
+  offset: 0, 0
+  index: -1
+poison02
+  rotate: false
+  xy: 300, 11
+  size: 51, 53
+  orig: 58, 58
+  offset: 4, 0
+  index: -1
+waterwave04
+  rotate: true
+  xy: 132, 117
+  size: 49, 174
+  orig: 56, 178
+  offset: 0, 0
+  index: -1
+window
+  rotate: false
+  xy: 368, 134
+  size: 17, 32
+  orig: 17, 32
+  offset: 0, 0
+  index: -1
+yucha2
+  rotate: false
+  xy: 270, 15
+  size: 28, 100
+  orig: 28, 100
+  offset: 0, 0
+  index: -1
