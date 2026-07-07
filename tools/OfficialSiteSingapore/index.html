@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en" data-i18n-page="home">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="STARCRYSTAL TECHNOLOGY PTE.LTD. — SCPlayer multimedia player and casual games platform: Vampire Dormitory, Brain Master, Save the Lord, and more." />
+  <title>STARCRYSTAL TECHNOLOGY PTE.LTD.</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="i18n.js?v=3" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="logo" href="/">
+        <span class="logo-en">STARCRYSTAL TECHNOLOGY PTE.LTD.</span>
+        <span class="logo-zh">星晶科技有限公司(新加坡)</span>
+      </a>
+      <div class="header-right">
+        <nav>
+          <a href="#products" data-i18n="nav_products">Products</a>
+          <a href="#games" data-i18n="nav_games">Games</a>
+          <a href="#about" data-i18n="nav_about">About</a>
+          <a href="#privacy" data-i18n="nav_privacy">Privacy</a>
+          <a href="#contact" data-i18n="nav_contact">Contact</a>
+        </nav>
+        <div class="lang-switch">
+          <span class="lang-switch-label" data-i18n="lang_label">Language</span>
+          <div class="lang-picker" id="lang-picker">
+            <button type="button" class="lang-picker-btn" id="lang-picker-btn" aria-haspopup="listbox" aria-expanded="false" aria-label="Language">
+              <span id="lang-picker-current">English</span>
+            </button>
+            <ul class="lang-picker-menu" id="lang-picker-menu" role="listbox" hidden>
+              <li role="option" data-lang="en" aria-selected="true">English</li>
+              <li role="option" data-lang="zh" aria-selected="false">中文</li>
+              <li role="option" data-lang="ur" aria-selected="false">اردو</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="wrap hero-inner">
+        <p class="eyebrow" data-i18n="hero_eyebrow">Multimedia · Casual Games · Unity &amp; H5</p>
+        <h1 data-i18n-html="hero_title">Boundless experiences<br />connecting content &amp; play</h1>
+        <p class="lead" data-i18n-html="hero_lead">
+          <strong>STARCRYSTAL TECHNOLOGY PTE.LTD.</strong> builds multimedia playback and lightweight gaming ecosystems —
+          <strong>SCPlayer</strong>, our Unity media player, and the <strong>StarCrystal Mini Games Platform</strong>, featuring Vampire Dormitory, Brain Master, Save the Lord, and more.
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#products" data-i18n="hero_btn_products">Our Products</a>
+          <a class="btn btn-ghost" href="#games" data-i18n="hero_btn_games">Browse Games</a>
+        </div>
+      </div>
+      <div class="hero-glow" aria-hidden="true"></div>
+      <div class="hero-glow hero-glow-2" aria-hidden="true"></div>
+    </section>
+
+    <section id="products" class="section">
+      <div class="wrap">
+        <div class="section-head">
+          <h2 data-i18n="products_title">Core Products</h2>
+          <p class="section-desc" data-i18n="products_desc">From playback to play — one stack for content and operations.</p>
+        </div>
+        <div class="product-grid">
+          <article class="product-card product-featured">
+            <div class="product-icon" aria-hidden="true">▶</div>
+            <span class="product-tag" data-i18n="sc_tag">Multimedia</span>
+            <h3>SCPlayer</h3>
+            <p class="product-sub" data-i18n="sc_sub">Multimedia Player · Unity</p>
+            <p data-i18n="sc_desc">
+              A high-performance Unity-based media player for common audio/video formats and smooth UI —
+              ideal for education, showcases, embedded playback, and our content ecosystem.
+            </p>
+            <ul class="product-points">
+              <li data-i18n="sc_p1">Unity cross-platform rendering &amp; UI</li>
+              <li data-i18n="sc_p2">Playback-first design with extensible plugins</li>
+              <li data-i18n="sc_p3">Custom deployment for enterprises &amp; content partners</li>
+            </ul>
+          </article>
+          <article class="product-card">
+            <div class="product-icon" aria-hidden="true">◆</div>
+            <span class="product-tag" data-i18n="plat_tag">Platform</span>
+            <h3 data-i18n="plat_name">StarCrystal Mini Games Platform</h3>
+            <p class="product-sub" data-i18n="plat_sub">Unified publishing · H5 hot updates</p>
+            <p data-i18n="plat_desc">
+              Lightweight publishing with unified accounts, rewards, and game catalogs. Clients fetch live game lists;
+              H5 packages update online; ops configure releases, versions, and channels.
+            </p>
+            <ul class="product-points">
+              <li data-i18n="plat_p1">One login &amp; tasks across multiple games</li>
+              <li data-i18n="plat_p2">H5 and Unity hybrid integration</li>
+              <li data-i18n="plat_p3">IDIP ops console &amp; audit trails</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="games" class="section section-alt">
+      <div class="wrap">
+        <div class="section-head">
+          <h2 data-i18n="games_title">Featured Mini Games</h2>
+          <p class="section-desc" data-i18n="games_desc">Original and partner titles — instant play, perfect for short sessions.</p>
+        </div>
+        <ul class="game-grid">
+          <li class="game-card">
+            <span class="game-tag" data-i18n="g1_tag">Casual · Sim</span>
+            <h3 data-i18n="g1_name">Vampire Dormitory</h3>
+            <p data-i18n="g1_desc">Light dorm-themed casual fun — easy to pick up for all ages.</p>
+          </li>
+          <li class="game-card">
+            <span class="game-tag" data-i18n="g2_tag">Puzzle · Brain</span>
+            <h3 data-i18n="g2_name">Brain Master</h3>
+            <p data-i18n="g2_desc">Levels that test observation and logic — train your brain step by step.</p>
+          </li>
+          <li class="game-card">
+            <span class="game-tag" data-i18n="g3_tag">Strategy · Levels</span>
+            <h3 data-i18n="g3_name">Save the Lord</h3>
+            <p data-i18n="g3_desc">Strategy puzzles meet stage progression — protect the lord and clear each level.</p>
+          </li>
+          <li class="game-card">
+            <span class="game-tag" data-i18n="g4_tag">Shooter · H5</span>
+            <h3 data-i18n="g4_name">Zombie Blaster</h3>
+            <p data-i18n="g4_desc">Classic shooter in H5 — fast action with platform hot updates.</p>
+          </li>
+          <li class="game-card">
+            <span class="game-tag" data-i18n="g5_tag">Arcade · Shooter</span>
+            <h3 data-i18n="g5_name">Thunder Fighter</h3>
+            <p data-i18n="g5_desc">Arcade aerial combat — dodge bullets and destroy enemy aircraft.</p>
+          </li>
+          <li class="game-card game-card-more">
+            <span class="game-tag" data-i18n="g6_tag">More</span>
+            <h3 data-i18n="g6_name">Coming Soon</h3>
+            <p data-i18n="g6_desc">Gem Crush, Speed Jump, Spin Wheel, and more — see the StarCrystal client for the full catalog.</p>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="about" class="section">
+      <div class="wrap about-grid">
+        <div>
+          <h2 data-i18n="about_title">About STARCRYSTAL TECHNOLOGY PTE.LTD.</h2>
+          <p data-i18n-html="about_body">
+            <strong>STARCRYSTAL TECHNOLOGY PTE.LTD.</strong> stands for boundless content, focused experience —
+            reliable multimedia and game tech to reach more users.
+            Our team covers Unity clients, Go backends, and H5 publishing from SCPlayer to platform launch.
+          </p>
+        </div>
+        <ul class="feature-list">
+          <li data-i18n-html="about_f1"><strong>SCPlayer</strong> — Unity multimedia player for content &amp; display</li>
+          <li data-i18n-html="about_f2"><strong>StarCrystal Mini Games Platform</strong> — accounts, coins, tasks, leaderboards</li>
+          <li data-i18n-html="about_f3"><strong>Original IP</strong> — Vampire Dormitory, Brain Master, Save the Lord &amp; more</li>
+          <li data-i18n-html="about_f4"><strong>Stack</strong> — Unity · H5 · Go API · IDIP ops backend</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="privacy" class="section section-alt">
+      <div class="wrap">
+        <div class="section-head">
+          <h2 data-i18n="privacy_title">Privacy Policies</h2>
+          <p class="section-desc" data-i18n="privacy_desc">App store compliance documents for our mobile apps on Apple App Store and Google Play.</p>
+        </div>
+        <div class="privacy-link-grid">
+          <a class="privacy-link-card" href="privacy/privacy-apple.html">
+            <span class="privacy-link-tag">iOS</span>
+            <h3 data-i18n="privacy_apple_title">Apple App Store</h3>
+            <p data-i18n="privacy_apple_desc">Privacy policy for iOS apps — data collection, ATT, and App Privacy labels.</p>
+            <span class="privacy-link-cta" data-i18n="privacy_read">Read policy</span>
+          </a>
+          <a class="privacy-link-card" href="privacy/privacy-google.html">
+            <span class="privacy-link-tag">Android</span>
+            <h3 data-i18n="privacy_google_title">Google Play</h3>
+            <p data-i18n="privacy_google_desc">Privacy policy for Android apps — Data safety form and user rights.</p>
+            <span class="privacy-link-cta" data-i18n="privacy_read">Read policy</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact" class="section">
+      <div class="wrap contact-box">
+        <h2 data-i18n="contact_title">Business &amp; Partnerships</h2>
+        <p data-i18n="contact_body">Game publishing, SCPlayer customization, platform integration — get in touch.</p>
+        <p class="contact-email">
+          <span data-i18n="contact_email">Email: </span>
+          <a href="mailto:support@starlaneinfinite.com">support@starlaneinfinite.com</a>
+        </p>
+        <p class="contact-brand" data-i18n="contact_brand">STARCRYSTAL TECHNOLOGY PTE.LTD.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-inner">
+      <span data-i18n="footer_copy">© STARCRYSTAL TECHNOLOGY PTE.LTD.</span>
+      <span class="sep">·</span>
+      <span data-i18n="footer_brand">星晶科技有限公司(新加坡)</span>
+      <span class="sep">·</span>
+      <a class="footer-mail" href="privacy/privacy-apple.html" data-i18n="footer_privacy_apple">Privacy (Apple)</a>
+      <span class="sep">·</span>
+      <a class="footer-mail" href="privacy/privacy-google.html" data-i18n="footer_privacy_google">Privacy (Google)</a>
+      <span class="sep">·</span>
+      <a class="footer-mail" href="mailto:support@starlaneinfinite.com">support@starlaneinfinite.com</a>
+    </div>
+  </footer>
+</body>
+</html>
